@@ -1,0 +1,18 @@
+# 特定の拡張子を無視する
+*.sin
+*.vcxproj
+*.user
+*.filters
+*.exe
+*.lib
+*.ipdb
+*.iobj
+*.pdb
+*.aps
+
+# 特定のディレクトリを無視する
+/.vs/
+/.git/
+/resource/
+/Debug/
+/Release/

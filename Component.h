@@ -10,56 +10,91 @@
 #include <cstdio>
 #include <list>
 
-class GameObject; // 前方
+//==========================================================================
+// 前方
+//==========================================================================
+class Component;
 
 //==========================================================================
 //
-// class  : Component
-// Content: コンポーネント
+// class  : GameObject
+// Content: ゲームオブジェクト
 //
 //==========================================================================
-class Component
+class GameObject
 {
+private:
+    // コピー禁止 (C++11)
+    GameObject(const GameObject &) = delete;
+    GameObject &operator=(const GameObject &) = delete;
 public:
-    /**
-    @brief コンポーネントのコンストラクタ
-    */
-    Component() {
-        m_GameObject = nullptr;
+    GameObject() {}
+    virtual ~GameObject() {
+        // コンポーネントの破棄
+        for (auto *& itr : m_child) {
+            Destroy(itr);
+        }
+        m_child.clear();
     }
 
     /**
-    @brief コンポーネントのデストラクタ
+    @brief コンポーネントの追加。Component を継承していない場合エラーが出ます。
+    @return コンポーネント
     */
-    virtual ~Component() {
-        // 破棄
-        Destroy(m_GameObject);
+    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+    _Ty* AddComponent() {
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+        _Ty *component = new _Ty();
+        component->SetGameObject(this);
+        m_child.push_back(component);
+        return component;
     }
 
     /**
-    @brief ゲームオブジェクトの取得
-    @return オブジェクト
+    @brief コンポーネントの追加。Component を継承していない場合エラーが出ます。
+    @return コンポーネント
     */
-    GameObject * GetGameObject() {
-        // null の場合は実体を生成し実体を返す、実態がある場合は実体を返す
-        return m_GameObject == nullptr ? m_GameObject = Initializer<GameObject>() : m_GameObject;
+    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value, typename... _Valty>
+    _Ty* AddComponent(_Valty&&... _Val) {
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+        _Ty *component = new _Ty((_Val)...);
+        component->SetGameObject(this);
+        m_child.push_back(component);
+        return component;
     }
 
     /**
     @brief コンポーネントの取得
     @return コンポーネント
     */
-    template <typename _Ty>
+    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
     _Ty* GetComponent() {
-        auto *component = dynamic_cast<_Ty*>(this);
-        return component != nullptr ? component : nullptr;
+        if (!isExtended)return nullptr;
+
+        // 対象のコンポーネントが出現するまで続け、出現した場合はその実態を返す
+        for (auto *& itr : m_child) {
+            _Ty *component = dynamic_cast<_Ty*>(itr);
+            if (component != nullptr) return component;
+        }
+        return dynamic_cast<_Ty*>(this);
     }
 
     /**
-    @brief ゲームオブジェクトの登録
+    @brief 子要素の数を返します
+    @return 要素数
     */
-    void SetGameObject(GameObject * obj) {
-        m_GameObject = obj;
+    auto GetNumChild() const {
+        return m_child.size();
+    }
+
+    /**
+    @brief 子要素を返します
+    @return コンポーネント格納領域
+    */
+    const auto GetChild() const {
+        return m_child;
     }
 private:
     /**
@@ -73,44 +108,35 @@ private:
             obj = nullptr;
         }
     }
-
-    /**
-    @brief オブジェクトの生成
-    @return オブジェクト
-    */
-    template<typename _Ty>
-    _Ty * Initializer() {
-        // テンプレートによるメモリ確保
-        return new _Ty;
-    }
 private:
-    GameObject* m_GameObject; // オブジェクト
+    std::list<Component*> m_child; // コンポーネントの管理
 };
 
 //==========================================================================
 //
-// class  : GameObject
-// Content: ゲームオブジェクト
+// class  : Component
+// Content: コンポーネント
 //
 //==========================================================================
-class GameObject
+class Component : public GameObject
 {
+private:
+    // コピー禁止 (C++11)
+    Component(const Component &) = delete;
+    Component &operator=(const Component &) = delete;
 public:
     /**
-    @brief オブジェクトのコンストラクタ
+    @brief コンポーネントのコンストラクタ
     */
-    GameObject() {}
+    Component() {
+        m_GameObject = nullptr;
+    }
 
     /**
-    @brief オブジェクトのデストラクタ
+    @brief コンポーネントのデストラクタ
     */
-    virtual ~GameObject() {
-        // コンポーネントの破棄
-        for (auto * itr : m_ComponentList) {
-            delete itr;
-            itr = nullptr;
-        }
-        m_ComponentList.clear();
+    virtual ~Component() {
+        m_GameObject = nullptr;
     }
 
     /**
@@ -118,65 +144,15 @@ public:
     @return オブジェクト
     */
     GameObject * GetGameObject() {
-        // null の場合は実体を生成し実体を返す、実態がある場合は実体を返す
-        return this;
+        return m_GameObject;
     }
 
     /**
-    @brief コンポーネントの追加。Component を継承していない場合エラーが出ます。
-    @return コンポーネント
+    @brief ゲームオブジェクトの登録
     */
-    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-    _Ty* AddComponent() {
-        // コンポーネントが継承されていない場合に出力されます。
-        static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
-        auto *component = new _Ty();
-        m_ComponentList.push_back(component);
-        return component;
-    }
-
-    /**
-    @brief コンポーネントの追加。Component を継承していない場合エラーが出ます。
-    @return コンポーネント
-    */
-    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value, typename... _Valty>
-    _Ty* AddComponent(_Valty&&... _Val) {
-        // コンポーネントが継承されていない場合に出力されます。
-        static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
-        auto *component = new _Ty((_Val)...);
-        m_ComponentList.push_back(component);
-        return component;
-    }
-
-    /**
-    @brief コンポーネントの取得
-    @return コンポーネント
-    */
-    template <typename _Ty>
-    _Ty* GetComponent() {
-        // 対象のコンポーネントが出現するまで続け、出現した場合はその実態を返す
-        for (auto *& itr : m_ComponentList) {
-            auto *component = dynamic_cast<_Ty*>(itr);
-            if (component != nullptr) return component;
-        }
-        return nullptr;
-    }
-
-    /**
-    @brief 子要素の数を返します
-    @return 要素数
-    */
-    auto GetNumChild() const {
-        return m_ComponentList.size();
-    }
-
-    /**
-    @brief 子要素を返します
-    @return コンポーネント格納領域
-    */
-    const auto GetChild() const {
-        return m_ComponentList;
+    void SetGameObject(GameObject * obj) {
+        m_GameObject = obj;
     }
 private:
-    std::list<Component*> m_ComponentList; // コンポーネントの管理
+    GameObject* m_GameObject = nullptr; // オブジェクト
 };
