@@ -22,16 +22,13 @@ private:
     // コピー禁止 (C++11)
     Component(const Component &) = delete;
     Component &operator=(const Component &) = delete;
+    Component &operator=(Component&&) = delete;
 public:
     Component() {
         m_GameObject = this;
     }
     virtual ~Component() {
-        // コンポーネントの破棄
-        for (auto *& itr : m_child) {
-            Destroy(itr);
-        }
-        m_child.clear();
+        AllDestroyComponent();
     }
 
     /**
@@ -70,7 +67,7 @@ public:
     _Ty* GetComponent() {
         if (!isExtended)return nullptr;
 
-        // 対象のコンポーネントが出現するまで続け、出現した場合はその実態を返す
+        // 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
         for (auto *& itr : m_child) {
             _Ty *component = dynamic_cast<_Ty*>(itr);
             if (component != nullptr) return component;
@@ -84,7 +81,7 @@ public:
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
     void DestroyComponent() {
         if (isExtended) {
-            // 対象のコンポーネントが出現するまで続け、出現した場合はその実態を返す
+            // 対象のコンポーネントが出現するまで続け、出現した場合はその実体をHAL破棄する
             for (auto itr = m_child.begin();itr != m_child.end();) {
                 if (dynamic_cast<_Ty*>((*itr)) != nullptr) {
                     delete (*itr);
@@ -95,6 +92,18 @@ public:
                 }
             }
         }
+    }
+
+    /**
+    @brief コンポーネントの破棄
+    */
+    void AllDestroyComponent() {
+        // 子コンポーネントの破棄
+        for (auto itr = m_child.begin();itr != m_child.end();++itr) {
+            delete (*itr);
+            (*itr) = nullptr;
+        }
+        m_child.clear();
     }
 
     /**
@@ -121,18 +130,11 @@ public:
         return m_GameObject;
     }
 private:
-    /**
-    @brief オブジェクトの破棄
-    */
-    template<typename _Ty>
-    void Destroy(_Ty *& obj) {
-        // テンプレートによるメモリ解放
-        if (obj != nullptr) {
-            delete obj;
-            obj = nullptr;
-        }
-    }
-private:
     std::list<Component*> m_child; // コンポーネントの管理
     Component* m_GameObject = this; // オブジェクト
 };
+
+/*
+_Ty(const _Ty& obj);
+_Ty &operator =(const _Ty & obj);
+*/
