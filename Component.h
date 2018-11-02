@@ -39,6 +39,7 @@ public:
     _Ty* AddComponent() {
         // コンポーネントが継承されていない場合に出力されます。
         static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+
         _Ty *component = new _Ty();
         component->m_GameObject = this;
         m_child.push_back(component);
@@ -53,6 +54,7 @@ public:
     _Ty* AddComponent(_Valty&&... _Val) {
         // コンポーネントが継承されていない場合に出力されます。
         static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+
         _Ty *component = new _Ty((_Val)...);
         component->m_GameObject = this;
         m_child.push_back(component);
@@ -65,7 +67,8 @@ public:
     */
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
     _Ty* GetComponent() {
-        if (!isExtended)return nullptr;
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 
         // 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
         for (auto *& itr : m_child) {
@@ -76,20 +79,33 @@ public:
     }
 
     /**
+    @brief コンポーネントの登録
+    */
+    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+    void SetComponent(_Ty *& child) {
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "SetChild<> : _Ty is not inherited from Component Class");
+
+        child->m_GameObject = this;
+        m_child.push_back(child);
+    }
+
+    /**
     @brief 指定コンポーネントの破棄
     */
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
     void DestroyComponent() {
-        if (isExtended) {
-            // 対象のコンポーネントが出現するまで続け、出現した場合はその実体をHAL破棄する
-            for (auto itr = m_child.begin();itr != m_child.end();) {
-                if (dynamic_cast<_Ty*>((*itr)) != nullptr) {
-                    delete (*itr);
-                    itr = m_child.erase(itr);
-                }
-                else {
-                    ++itr;
-                }
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
+
+        // 対象のコンポーネントが出現するまで続け、出現した場合はその実体をHAL破棄する
+        for (auto itr = m_child.begin();itr != m_child.end();) {
+            if (dynamic_cast<_Ty*>((*itr)) != nullptr) {
+                delete (*itr);
+                itr = m_child.erase(itr);
+            }
+            else {
+                ++itr;
             }
         }
     }
