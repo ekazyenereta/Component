@@ -9,6 +9,7 @@
 //==========================================================================
 #include <cstdio>
 #include <list>
+#include <string>
 
 //==========================================================================
 //
@@ -25,10 +26,12 @@ private:
     Component &operator=(Component&&) = delete;
 public:
     Component() {
+        m_ComponentName = "default";
         m_GameObject = this;
     }
     virtual ~Component() {
         AllDestroyComponent();
+        m_ComponentName.clear();
     }
 
     /**
@@ -79,15 +82,59 @@ public:
     }
 
     /**
+    @brief コンポーネントの取得
+    @param label [in] コンポーネント名
+    @return コンポーネント
+    */
+    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+    _Ty* GetComponent(const std::string & label) {
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
+
+        // 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
+        for (auto *& itr : m_child) {
+            _Ty *component = dynamic_cast<_Ty*>(itr);
+
+            // 対象コンポーネントが出現したら
+            if (component != nullptr&&itr->m_ComponentName == label) {
+                return component;
+            }
+        }
+        // 上の処理で発見できなかった場合
+        if (m_ComponentName == label) {
+            return dynamic_cast<_Ty*>(this);
+        }
+        return nullptr;
+    }
+
+    /**
+    @brief コンポーネントの取得、キャストはご自分でお願いします。
+    @return コンポーネント
+    */
+    Component* GetComponent(const std::string & label) {
+        // 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
+        for (auto *& itr : m_child) {
+            // コンポーネント名が一致した場合
+            if (itr->m_ComponentName == label) {
+                return itr;
+            }
+        }
+    }
+
+    /**
     @brief コンポーネントの登録
+    @param child [in] コンポーネントの登録
     */
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
     void SetComponent(_Ty *& child) {
         // コンポーネントが継承されていない場合に出力されます。
-        static_assert(isExtended, "SetChild<> : _Ty is not inherited from Component Class");
+        static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
-        child->m_GameObject = this;
-        m_child.push_back(child);
+        // 登録対象が既に存在するかどうかチェックする
+        if (!CheckComponentPointer(child)) {
+            child->m_GameObject = this;
+            m_child.push_back(child);
+        }
     }
 
     /**
@@ -111,15 +158,52 @@ public:
     }
 
     /**
+    @brief 指定コンポーネントの破棄
+    @param label [in] コンポーネント名
+    */
+    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+    void DestroyComponent(const std::string & label) {
+        // コンポーネントが継承されていない場合に出力されます。
+        static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
+
+        // 対象のコンポーネントが出現するまで続け、出現した場合はその実体をHAL破棄する
+        for (auto itr = m_child.begin();itr != m_child.end();) {
+            if (dynamic_cast<_Ty*>((*itr)) != nullptr && (*itr)->m_ComponentName == label) {
+                delete (*itr);
+                itr = m_child.erase(itr);
+            }
+            else {
+                ++itr;
+            }
+        }
+    }
+
+    /**
     @brief コンポーネントの破棄
     */
     void AllDestroyComponent() {
         // 子コンポーネントの破棄
-        for (auto itr = m_child.begin();itr != m_child.end();++itr) {
-            delete (*itr);
-            (*itr) = nullptr;
+        for (auto *& itr : m_child) {
+            delete itr;
+            itr = nullptr;
         }
         m_child.clear();
+    }
+
+    /**
+    @brief コンポーネント名の登録
+    @param label [in] コンポーネント名
+    */
+    void SetComponentName(const std::string & label) {
+        m_ComponentName = label;
+    }
+
+    /**
+    @brief コンポーネント名の取得
+    @return コンポーネント名
+    */
+    const std::string & GetComponentName() const {
+        return m_ComponentName;
     }
 
     /**
@@ -146,8 +230,24 @@ public:
         return m_GameObject;
     }
 private:
+    /**
+    @brief 同一コンポーネントがどうかチェックします。同一コンポーネントの場合は true が返ります。
+    @param input [in] チェックするコンポーネント
+    */
+    template <typename _Ty>
+    bool CheckComponentPointer(_Ty * input) {
+        for (auto *& itr : m_child) {
+            _Ty * child = dynamic_cast<_Ty*>(itr);
+            if (child != nullptr&&child == input) {
+                return true;
+            }
+        }
+        return false;
+    }
+private:
     std::list<Component*> m_child; // コンポーネントの管理
     Component* m_GameObject = this; // オブジェクト
+    std::string m_ComponentName; // コンポーネント名
 };
 
 /*
