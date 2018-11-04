@@ -124,17 +124,23 @@ public:
     /**
     @brief コンポーネントの登録
     @param child [in] コンポーネントの登録
+    @return 登録成功時に true が返ります
     */
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-    void SetComponent(_Ty *& child) {
+    bool SetComponent(_Ty *& child) {
         // コンポーネントが継承されていない場合に出力されます。
         static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
+
+        // 登録対象が nullptr の場合、失敗
+        if (child == nullptr)return false;
 
         // 登録対象が既に存在するかどうかチェックする
         if (!CheckComponentPointer(child)) {
             child->m_GameObject = this;
             m_child.push_back(child);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -160,22 +166,26 @@ public:
     /**
     @brief 指定コンポーネントの破棄
     @param label [in] コンポーネント名
+    @return 破棄成功時に true が返ります
     */
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-    void DestroyComponent(const std::string & label) {
+    bool DestroyComponent(const std::string & label) {
         // コンポーネントが継承されていない場合に出力されます。
         static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
+        bool flag = false;
 
         // 対象のコンポーネントが出現するまで続け、出現した場合はその実体をHAL破棄する
         for (auto itr = m_child.begin();itr != m_child.end();) {
             if (dynamic_cast<_Ty*>((*itr)) != nullptr && (*itr)->m_ComponentName == label) {
                 delete (*itr);
                 itr = m_child.erase(itr);
+                flag = true;
             }
             else {
                 ++itr;
             }
         }
+        return flag;
     }
 
     /**
