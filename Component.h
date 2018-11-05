@@ -241,7 +241,7 @@ public:
     }
 private:
     /**
-    @brief 同一コンポーネントがどうかチェックします。同一コンポーネントの場合は true が返ります。
+    @brief 同一コンポーネントが存在するかどうかチェックします。存在する場合は true が返ります。
     @param input [in] チェックするコンポーネント
     */
     template <typename _Ty>
