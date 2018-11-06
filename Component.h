@@ -27,7 +27,7 @@ private:
 public:
     Component() {
         m_ComponentName = "default";
-        m_GameObject = this;
+        m_parent = this;
     }
     virtual ~Component() {
         AllDestroyComponent();
@@ -44,7 +44,7 @@ public:
         static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
         _Ty *component = new _Ty();
-        component->m_GameObject = this;
+        component->m_parent = this;
         m_child.push_back(component);
         return component;
     }
@@ -59,7 +59,7 @@ public:
         static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
         _Ty *component = new _Ty((_Val)...);
-        component->m_GameObject = this;
+        component->m_parent = this;
         m_child.push_back(component);
         return component;
     }
@@ -136,7 +136,7 @@ public:
 
         // 登録対象が既に存在するかどうかチェックする
         if (!CheckComponentPointer(child)) {
-            child->m_GameObject = this;
+            child->m_parent = this;
             m_child.push_back(child);
             return true;
         }
@@ -236,8 +236,16 @@ public:
     @brief ゲームオブジェクトの取得
     @return オブジェクト
     */
-    Component * GetGameObject() {
-        return m_GameObject;
+    [[deprecated("please use GetParent() function")]] Component * GetGameObject() {
+        return m_parent;
+    }
+
+    /**
+    @brief ゲームオブジェクトの取得
+    @return オブジェクト
+    */
+    Component * GetParent() {
+        return m_parent;
     }
 private:
     /**
@@ -256,7 +264,7 @@ private:
     }
 private:
     std::list<Component*> m_child; // コンポーネントの管理
-    Component* m_GameObject = this; // オブジェクト
+    Component* m_parent = this; // 親オブジェクト
     std::string m_ComponentName; // コンポーネント名
 };
 
