@@ -1,12 +1,15 @@
-
+#define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
+#include <crtdbg.h>
+#define _GLIBCXX_DEBUG
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "Component.h"
 
-class CTest : public Component
+class CTest : public component::Component
 {
 public:
     CTest() {}
@@ -20,7 +23,7 @@ private:
 
 };
 
-class CTest2 : public Component
+class CTest2 : public component::Component
 {
 public:
     CTest2() {}
@@ -34,7 +37,7 @@ private:
 
 };
 
-class CTest3 : public Component
+class CTest3 : public component::Component
 {
 public:
     CTest3() {}
@@ -50,27 +53,40 @@ private:
 
 int main()
 {
-    Component gameObject;
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	// CRTメモリリーク箇所検出
+	//   _CrtSetBreakAlloc(35556);
 
-    gameObject.AddComponent<CTest>();
-    gameObject.AddComponent<CTest2>();
-    gameObject.GetComponent< CTest2>()->SetComponentName("test");
-    gameObject.AddComponent<CTest3>()->AddComponent<CTest>()->AddComponent<CTest2>();
+	std::unique_ptr<component::Component> gameObject(new component::Component);
 
-    printf("子要素数 >> %d \n", gameObject.GetNumChild());
+	auto obj1 = gameObject->AddComponent<CTest>();
+	auto obj2 = gameObject->AddComponent<CTest2>();
+	auto obj3 = gameObject->AddComponent<CTest3>();
+	auto obj4 = obj3.lock()->AddComponent<CTest>();
+	auto obj5 = obj3.lock()->AddComponent<CTest2>();
 
-    gameObject.GetComponent<CTest3>()->Text();
-    gameObject.GetComponent<CTest3>()->GetComponent<CTest>()->Text();
-    gameObject.GetComponent<CTest3>()->GetComponent<CTest>()->GetComponent<CTest2>()->Text();
+	obj1.lock()->Text();
+	obj2.lock()->Text();
+	obj3.lock()->Text();
+	obj4.lock()->Text();
+	obj5.lock()->Text();
 
-    if (gameObject.GetComponent<CTest2>("test") != nullptr) {
-        gameObject.GetComponent<CTest2>("test")->Text();
-    }
-    else if (gameObject.GetComponent<CTest2>("test") == nullptr) {
-        printf("not name");
-    }
+	obj3.lock()->GetComponent<CTest>();
+	obj3.lock()->GetComponent<CTest>("ss");
+	obj3.lock()->GetComponent("ss");
 
-    rewind(stdin);
-    getchar();
-    return 0;
+	auto obj6 = obj3.lock()->GetChild();
+
+	if (!obj5.expired())
+	{
+		std::cout << "CTest 参照数 >> " << obj1.lock().use_count() << std::endl;
+		std::cout << "CTest2 参照数 >> " << obj2.lock().use_count() << std::endl;
+		std::cout << "CTest3 参照数 >> " << obj3.lock().use_count() << std::endl;
+		std::cout << "CTest 参照数 >> " << obj4.lock().use_count() << std::endl;
+		std::cout << "CTest2 参照数 >> " << obj5.lock().use_count() << std::endl;
+		std::cout << "gameObject 子要素の数 >> " << gameObject->GetNumChild() << std::endl;
+	}
+
+
+	return std::system("PAUSE");
 }
