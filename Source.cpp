@@ -9,46 +9,35 @@
 
 #include "Component.h"
 
-class CTest : public component::Component
+class Test : public component::Component
 {
 public:
-    CTest() {}
-    ~CTest() {}
-
-    void Text()
-    {
-        printf("GetComponent >> CTest \n");
-    }
-private:
-
+	Test() {}
+	Test(const std::string & text) : m_text(text), Component(text) {}
+	~Test() {}
+	void print() {
+		std::cout << " [" << GetComponentName() << "] " << " [Test] " << m_text << std::endl;
+	}
+protected:
+	std::string m_text;
 };
 
-class CTest2 : public component::Component
+class CTest : public Test
 {
 public:
-    CTest2() {}
-    ~CTest2() {}
-
-    void Text()
-    {
-        printf("GetComponent >> CTest2 \n");
-    }
-private:
-
+	CTest(const std::string & text) :Test(text) {}
 };
 
-class CTest3 : public component::Component
+class CTest2 : public Test
 {
 public:
-    CTest3() {}
-    ~CTest3() {}
+	CTest2(const std::string & text) :Test(text) {}
+};
 
-    void Text()
-    {
-        printf("GetComponent >> CTest3 \n");
-    }
-private:
-
+class CTest3 : public Test
+{
+public:
+	CTest3(const std::string & text) :Test(text) {}
 };
 
 int main()
@@ -58,35 +47,36 @@ int main()
 	//   _CrtSetBreakAlloc(35556);
 
 	std::unique_ptr<component::Component> gameObject(new component::Component);
+	std::weak_ptr<component::Component> weak_ptr;
 
-	auto obj1 = gameObject->AddComponent<CTest>();
-	auto obj2 = gameObject->AddComponent<CTest2>();
-	auto obj3 = gameObject->AddComponent<CTest3>();
-	auto obj4 = obj3.lock()->AddComponent<CTest>();
-	auto obj5 = obj3.lock()->AddComponent<CTest2>();
+	auto obj1 = gameObject->AddComponent<CTest>("1");
+	auto obj2 = gameObject->AddComponent<CTest2>("2");
+	auto obj3 = gameObject->AddComponent<CTest3>("3");
+	auto obj4 = obj3->AddComponent<CTest>("4");
+	auto obj5 = obj3->AddComponent<CTest2>("5");
+	auto obj6 = gameObject->GetComponent<CTest>();
+	auto obj7 = gameObject->GetComponent<CTest>("1");
+	auto obj8 = gameObject->GetComponent("1");
+	auto obj9 = gameObject->NodeSearch<CTest2>("8");
+	auto obj10 = gameObject->GetChild();
+	auto obj11 = obj5.weak_ptr();
+	auto obj12 = obj5->GetParent();
 
-	obj1.lock()->Text();
-	obj2.lock()->Text();
-	obj3.lock()->Text();
-	obj4.lock()->Text();
-	obj5.lock()->Text();
+	obj1->print();
+	obj2->print();
+	obj3->print();
+	obj4->print();
+	obj5->print();
 
-	obj3.lock()->GetComponent<CTest>();
-	obj3.lock()->GetComponent<CTest>("ss");
-	obj3.lock()->GetComponent("ss");
-
-	auto obj6 = obj3.lock()->GetChild();
-
-	if (!obj5.expired())
+	if (obj5)
 	{
-		std::cout << "CTest 参照数 >> " << obj1.lock().use_count() << std::endl;
-		std::cout << "CTest2 参照数 >> " << obj2.lock().use_count() << std::endl;
-		std::cout << "CTest3 参照数 >> " << obj3.lock().use_count() << std::endl;
-		std::cout << "CTest 参照数 >> " << obj4.lock().use_count() << std::endl;
-		std::cout << "CTest2 参照数 >> " << obj5.lock().use_count() << std::endl;
 		std::cout << "gameObject 子要素の数 >> " << gameObject->GetNumChild() << std::endl;
+		std::cout << "obj1 子要素の数 >> " << obj1->GetNumChild() << std::endl;
+		std::cout << "obj2 子要素の数 >> " << obj2->GetNumChild() << std::endl;
+		std::cout << "obj3 子要素の数 >> " << obj3->GetNumChild() << std::endl;
+		std::cout << "obj4 子要素の数 >> " << obj4->GetNumChild() << std::endl;
+		std::cout << "obj5 子要素の数 >> " << obj5->GetNumChild() << std::endl;
 	}
-
 
 	return std::system("PAUSE");
 }
