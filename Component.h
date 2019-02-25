@@ -1,6 +1,6 @@
 //==========================================================================
-// コンポーネント[Component.h]
-// author: tatsuya ogawa
+// コンポーネント [Component.h]
+// author: ekazyenereta
 //==========================================================================
 #pragma once
 
@@ -36,7 +36,7 @@ namespace component
 		IReference(const std::shared_ptr<Component> & _This) : m_weak(_This) {}
 		IReference(const IReference  & _Right) : m_weak(_Right.m_weak.lock()) {}
 		~IReference() {}
-		
+
 		_Ty * operator->() const noexcept {
 			return (_Ty*)m_weak.lock().get();
 		}
