@@ -51,7 +51,7 @@ int main()
 	// _CrtSetBreakAlloc(0);
 
 	std::unique_ptr<component::Component> gameObject(new component::Component("GameObject"));
-	const std::string str_element = " Žq—v‘f‚Ì” >> ";
+	const std::string str_element = " num element >> ";
 
 	auto obj1 = gameObject->AddComponent<CTest>("[1]");
 	auto obj2 = gameObject->AddComponent<CTest2>("[2]");
