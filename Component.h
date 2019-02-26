@@ -133,6 +133,14 @@ namespace component
 			return m_parent == nullptr;
 		}
 		template<class _Ty2>
+		bool operator!=(const _Ty2 * _Right) const noexcept {
+			return m_parent != _Right;
+		}
+		template<class _Ty2>
+		bool operator==(const _Ty2 * _Right) const noexcept {
+			return m_parent == _Right;
+		}
+		template<class _Ty2>
 		bool operator!=(Parent <_Ty2> &_Right) const noexcept {
 			if (m_parent == nullptr)return false;
 			if (_Right.m_parent == nullptr)return false;
