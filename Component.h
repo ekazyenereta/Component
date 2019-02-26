@@ -1,5 +1,5 @@
 //==========================================================================
-// コンポーネント [Component.h]
+// Component [Component.h]
 // author: ekazyenereta
 //==========================================================================
 #pragma once
@@ -14,139 +14,6 @@
 
 namespace component
 {
-	class Component;
-
-	template <typename _Ty1, typename _Ty2, bool isExtended = std::is_base_of<Component, _Ty1>::value>
-	class OriginReference
-	{
-		static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
-	public:
-		OriginReference() {}
-		OriginReference(const std::shared_ptr<_Ty2> & _This) : m_weak(_This) {}
-		OriginReference(const OriginReference & _Right) : m_weak(_Right.m_weak.lock()) {}
-		~OriginReference() {}
-
-		operator bool() const noexcept {
-			return !m_weak.expired();
-		}
-		bool operator!=(nullptr_t) const noexcept {
-			return !m_weak.expired();
-		}
-		bool operator==(nullptr_t) const noexcept {
-			return m_weak.expired();
-		}
-		template<class _Ty3>
-		bool operator!=(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
-			if (m_weak.expired())return false;
-			if (_Right.m_weak.expired())return false;
-			return m_weak.lock() != _Right.m_weak.lock();
-		}
-		template<class _Ty3>
-		bool operator==(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
-			if (m_weak.expired())return false;
-			if (_Right.m_weak.expired())return false;
-			return m_weak.lock() == _Right.m_weak.lock();
-		}
-
-		/**
-		English
-		@brief checks whether the referenced object was already deleted
-		@return True if the managed object exists, false otherwise
-		Japanese
-		@brief 監視対象の寿命切れやリンク切れを判定する
-		@return 管理対象オブジェクトが存在する場合は true、そうでない場合 は false
-		*/
-		bool check() const noexcept {
-			return !m_weak.expired();
-		}
-
-		/**
-		English
-		@brief returns the number of shared_ptr objects that manage the object
-		@return The number of shared_ptr instances sharing the ownership of the managed object at the instant of the call.
-		Japanese
-		@brief 監視しているshared_ptrオブジェクトの所有者数を取得する
-		@return shared_ptr呼び出しの瞬間に管理対象オブジェクトの所有権を共有しているインスタンスの数。
-		*/
-		long access_count() const noexcept {
-			return m_weak.use_count();
-		}
-
-		/**
-		English
-		@brief Acquire resource monitoring function
-		@return Resource monitoring function
-		Japanese
-		@brief リソース監視機能の取得
-		@return リソース監視機能
-		*/
-		const std::weak_ptr<_Ty2> & weak_ptr() const noexcept {
-			return m_weak;
-		}
-	protected:
-		std::weak_ptr<_Ty2> m_weak; // 監視機能
-	};
-
-	//==========================================================================
-	//
-	// class  : IParent 
-	//
-	// English
-	// Content: Monitoring function reference class
-	//
-	// Japanese
-	// Content: 監視機能の参照クラス
-	//
-	//==========================================================================
-	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	class IParent : public OriginReference<_Ty, Component*>
-	{
-		static_assert(isExtended, "IParent <> : _Ty is not inherited from Component Class");
-	public:
-		IParent() {}
-		~IParent() {}
-
-		using OriginReference<_Ty, Component*>::OriginReference;
-		using OriginReference<_Ty, Component*>::operator bool;
-		using OriginReference<_Ty, Component*>::operator==;
-		using OriginReference<_Ty, Component*>::operator!=;
-		using OriginReference<_Ty, Component*>::m_weak;
-
-		_Ty * operator->() const noexcept {
-			return (_Ty*)(*m_weak.lock().get());
-		}
-	};
-
-	//==========================================================================
-	//
-	// class  : IReference 
-	//
-	// English
-	// Content: Monitoring function reference class
-	//
-	// Japanese
-	// Content: 監視機能の参照クラス
-	//
-	//==========================================================================
-	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	class IReference : public OriginReference<_Ty, Component>
-	{
-		static_assert(isExtended, "IReference <> : _Ty is not inherited from Component Class");
-	public:
-		IReference() {}
-		~IReference() {}
-
-		using OriginReference<_Ty, Component>::OriginReference;
-		using OriginReference<_Ty, Component>::operator bool;
-		using OriginReference<_Ty, Component>::operator==;
-		using OriginReference<_Ty, Component>::operator!=;
-		using OriginReference<_Ty, Component>::m_weak;
-
-		_Ty * operator->() const noexcept {
-			return (_Ty*)m_weak.lock().get();
-		}
-	};
-
 	//==========================================================================
 	//
 	// class  : Component
@@ -155,6 +22,157 @@ namespace component
 	//==========================================================================
 	class Component
 	{
+	protected:
+		//==========================================================================
+		//
+		// class  : OriginReference 
+		//
+		// English
+		// Content: Monitoring function reference class
+		//
+		// Japanese
+		// Content: 監視機能の参照クラス
+		//
+		//==========================================================================
+		template <typename _Ty1, typename _Ty2, bool isExtended = std::is_base_of<Component, _Ty1>::value>
+		class OriginReference
+		{
+			static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
+		public:
+			using element_type = _Ty1;
+			using inheritance_type = _Ty2;
+		public:
+			OriginReference() {}
+			OriginReference(const std::shared_ptr<_Ty2> & _This) : m_weak(_This) {}
+			OriginReference(const OriginReference & _Right) : m_weak(_Right.m_weak.lock()) {}
+			~OriginReference() {}
+
+			operator bool() const noexcept {
+				return !m_weak.expired();
+			}
+			bool operator!=(nullptr_t) const noexcept {
+				return !m_weak.expired();
+			}
+			bool operator==(nullptr_t) const noexcept {
+				return m_weak.expired();
+			}
+			template<class _Ty3>
+			bool operator!=(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
+				if (m_weak.expired())return false;
+				if (_Right.m_weak.expired())return false;
+				return m_weak.lock() != _Right.m_weak.lock();
+			}
+			template<class _Ty3>
+			bool operator==(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
+				if (m_weak.expired())return false;
+				if (_Right.m_weak.expired())return false;
+				return m_weak.lock() == _Right.m_weak.lock();
+			}
+
+			/**
+			English
+			@brief checks whether the referenced object was already deleted
+			@return True if the managed object exists, false otherwise
+			Japanese
+			@brief 監視対象の寿命切れやリンク切れを判定する
+			@return 管理対象オブジェクトが存在する場合は true、そうでない場合 は false
+			*/
+			bool check() const noexcept {
+				return !m_weak.expired();
+			}
+
+			/**
+			English
+			@brief returns the number of shared_ptr objects that manage the object
+			@return The number of shared_ptr instances sharing the ownership of the managed object at the instant of the call.
+			Japanese
+			@brief 監視しているshared_ptrオブジェクトの所有者数を取得する
+			@return shared_ptr呼び出しの瞬間に管理対象オブジェクトの所有権を共有しているインスタンスの数。
+			*/
+			long access_count() const noexcept {
+				return m_weak.use_count();
+			}
+
+			/**
+			English
+			@brief Acquire resource monitoring function
+			@return Resource monitoring function
+			Japanese
+			@brief リソース監視機能の取得
+			@return リソース監視機能
+			*/
+			const std::weak_ptr<_Ty2> & weak_ptr() const noexcept {
+				return m_weak;
+			}
+		protected:
+			std::weak_ptr<_Ty2> m_weak; // 監視機能
+		};
+	public:
+		//==========================================================================
+		//
+		// class  : Parent 
+		//
+		// English
+		// Content: Monitoring function reference class
+		//
+		// Japanese
+		// Content: 監視機能の参照クラス
+		//
+		//==========================================================================
+		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+		class Parent : public OriginReference<_Ty, Component*>
+		{
+			static_assert(isExtended, "Parent <> : _Ty is not inherited from Component Class");
+			using reference = OriginReference<_Ty, Component*>;
+		public:
+			Parent() {}
+			~Parent() {}
+
+			using reference::OriginReference;
+			using reference::operator bool;
+			using reference::operator==;
+			using reference::operator!=;
+			using reference::m_weak;
+			using reference::element_type;
+			using reference::inheritance_type;
+
+			_Ty * operator->() const noexcept {
+				return (_Ty*)(*m_weak.lock().get());
+			}
+		};
+	public:
+		//==========================================================================
+		//
+		// class  : Reference 
+		//
+		// English
+		// Content: Monitoring function reference class
+		//
+		// Japanese
+		// Content: 監視機能の参照クラス
+		//
+		//==========================================================================
+		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+		class Reference : public OriginReference<_Ty, Component>
+		{
+			static_assert(isExtended, "Reference <> : _Ty is not inherited from Component Class");
+			using reference = OriginReference<_Ty, Component>;
+		public:
+			Reference() {}
+			~Reference() {}
+
+			using reference::OriginReference;
+			using reference::operator bool;
+			using reference::operator==;
+			using reference::operator!=;
+			using reference::m_weak;
+			using reference::element_type;
+			using reference::inheritance_type;
+
+			_Ty * operator->() const noexcept {
+				return (_Ty*)m_weak.lock().get();
+			}
+		};
 	private:
 		// Copy prohibited (C++11)
 		Component(const Component &) = delete;
@@ -186,7 +204,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IReference <_Ty> AddComponent() {
+		Reference <_Ty> AddComponent() {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 			std::shared_ptr<Component> _Ptr(new _Ty());
 			m_component_child.emplace_back(_Ptr);
@@ -203,7 +221,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value, typename... _Valty>
-		IReference <_Ty> AddComponent(_Valty&&... _Val) {
+		Reference <_Ty> AddComponent(_Valty&&... _Val) {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 			std::shared_ptr<Component> ptr(new _Ty((_Val)...));
 			m_component_child.emplace_back(ptr);
@@ -220,12 +238,12 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IReference <_Ty> GetComponent() {
+		Reference <_Ty> GetComponent() {
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
 				if (dynamic_cast<_Ty*>(itr.get()) != nullptr)return itr;
-			return IReference <_Ty>();
+			return Reference <_Ty>();
 		}
 
 		/**
@@ -239,7 +257,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IReference <_Ty> GetComponent(const std::string & _Name) {
+		Reference <_Ty> GetComponent(const std::string & _Name) {
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
@@ -252,7 +270,7 @@ namespace component
 				if (dynamic_cast<_Ty*>((*itr->m_component_this)) != nullptr)
 					return itr;
 			}
-			return IReference <_Ty>();
+			return Reference <_Ty>();
 		}
 
 		/**
@@ -265,11 +283,11 @@ namespace component
 		@param _Name [in] コンポーネント名
 		@return 監視機能の参照クラス
 		*/
-		IReference <Component> GetComponent(const std::string & _Name) {
+		Reference <Component> GetComponent(const std::string & _Name) {
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
 				if (itr->m_component_name == _Name)return itr;
-			return IReference <Component>();
+			return Reference <Component>();
 		}
 
 		/**
@@ -283,7 +301,7 @@ namespace component
 		@return 成功した場合にtrue、失敗した場合にfalseを返します。
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool SetComponent(IReference <_Ty> & _Ref) {
+		bool SetComponent(Reference <_Ty> & _Ref) {
 			// コンポーネントが継承されていない場合に出力されます。
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
@@ -342,7 +360,7 @@ namespace component
 		@return 成功した場合はtrue、失敗した場合はfalseを返します。
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool DestroyComponent(IReference <_Ty> & _Ref) {
+		bool DestroyComponent(Reference <_Ty> & _Ref) {
 			// 破棄対象の検索
 			auto itr = std::find(m_component_child.begin(), m_component_child.end(), _Ref.weak_ptr().lock());
 			if (itr == m_component_child.end())return false;
@@ -454,8 +472,8 @@ namespace component
 		@brief 子要素を取得する
 		@return 子要素
 		*/
-		const std::list<IReference<Component>> GetChild() const {
-			std::list<IReference<Component>> Ref;
+		const std::list<Reference<Component>> GetChild() const {
+			std::list<Reference<Component>> Ref;
 			for (auto itr : m_component_child)
 				Ref.push_back(itr);
 			return Ref;
@@ -470,9 +488,9 @@ namespace component
 		@return 親要素
 		*/
 		template<typename _Ty = Component, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IParent <_Ty> GetParent() {
-			if (m_component_parent == nullptr)return IParent<_Ty>();
-			return IParent<_Ty>(m_component_parent->m_component_this);
+		Parent <_Ty> GetParent() {
+			if (m_component_parent == nullptr)return Parent<_Ty>();
+			return Parent<_Ty>(m_component_parent->m_component_this);
 		}
 
 		/**
@@ -486,14 +504,14 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IReference <_Ty> NodeSearch(const std::string & _Name) {
+		Reference <_Ty> NodeSearch(const std::string & _Name) {
 			// コンポーネントが継承されていない場合に出力されます。
 			static_assert(isExtended, "WarrantyParent<> : _Ty is not inherited from Component Class");
-			IReference <_Ty> obj1 = GetComponent<_Ty>(_Name);
+			Reference <_Ty> obj1 = GetComponent<_Ty>(_Name);
 			if (obj1.check())return obj1;
 
 			for (auto & itr : m_component_child) {
-				IReference <_Ty> obj2 = itr->NodeSearch<_Ty>(_Name);
+				Reference <_Ty> obj2 = itr->NodeSearch<_Ty>(_Name);
 				if (obj2.check())return obj2;
 			}
 			return obj1;
@@ -515,7 +533,7 @@ namespace component
 		@return 放棄成功時に true が返ります
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool Aaa(IReference <_Ty> & _Ref) {
+		bool Aaa(Reference <_Ty> & _Ref) {
 			if (m_component_parent == this)return false;
 			auto itr = std::find(m_component_parent->m_component_child.begin(), m_component_parent->m_component_child.end(), _Ref.weak_ptr().lock());
 			if (itr == m_component_parent->m_component_child.end())return false;
@@ -529,4 +547,9 @@ namespace component
 		Component * m_component_parent; // 親コンポーネント
 		std::string m_component_name; // コンポーネント名
 	};
+
+	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+	using IParent = Component::Parent<_Ty>;
+	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+	using IReference = Component::Reference<_Ty>;
 }

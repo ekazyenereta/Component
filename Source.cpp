@@ -66,9 +66,12 @@ int main()
 	auto obj11 = obj5.weak_ptr();
 	auto obj12 = obj5->GetParent();
 
-	obj12.access_count();
-	obj12.check();
-	obj12.weak_ptr();
+	component::IReference<CTest2> obj13 = obj5;
+	auto obj14 = obj5;
+
+	obj5.access_count();
+	obj5.check();
+	obj5.weak_ptr();
 
 	obj1->print();
 	obj2->print();
