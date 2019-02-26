@@ -66,6 +66,10 @@ int main()
 	auto obj11 = obj5.weak_ptr();
 	auto obj12 = obj5->GetParent();
 
+	obj12.access_count();
+	obj12.check();
+	obj12.weak_ptr();
+
 	obj1->print();
 	obj2->print();
 	obj3->print();

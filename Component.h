@@ -99,77 +99,22 @@ namespace component
 	//
 	//==========================================================================
 	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	class IParent
+	class IParent : public OriginReference<_Ty, Component*>
 	{
 		static_assert(isExtended, "IParent <> : _Ty is not inherited from Component Class");
 	public:
 		IParent() {}
-		IParent(const std::shared_ptr<Component*> & _This) : m_weak(_This) {}
-		IParent(const IParent & _Right) : m_weak(_Right.m_weak.lock()) {}
 		~IParent() {}
+
+		using OriginReference<_Ty, Component*>::OriginReference;
+		using OriginReference<_Ty, Component*>::operator bool;
+		using OriginReference<_Ty, Component*>::operator==;
+		using OriginReference<_Ty, Component*>::operator!=;
+		using OriginReference<_Ty, Component*>::m_weak;
 
 		_Ty * operator->() const noexcept {
 			return (_Ty*)(*m_weak.lock().get());
 		}
-		operator bool() const noexcept {
-			return !m_weak.expired();
-		}
-		bool operator!=(nullptr_t) const noexcept {
-			return !m_weak.expired();
-		}
-		bool operator==(nullptr_t) const noexcept {
-			return m_weak.expired();
-		}
-		template<class _Ty2>
-		bool operator!=(IParent <_Ty2> &_Right) const noexcept {
-			if (m_weak.expired())return false;
-			if (_Right.m_weak.expired())return false;
-			return m_weak.lock() != _Right.m_weak.lock();
-		}
-		template<class _Ty2>
-		bool operator==(IParent <_Ty2> &_Right) const noexcept {
-			if (m_weak.expired())return false;
-			if (_Right.m_weak.expired())return false;
-			return m_weak.lock() == _Right.m_weak.lock();
-		}
-
-		/**
-		English
-		@brief checks whether the referenced object was already deleted
-		@return True if the managed object exists, false otherwise
-		Japanese
-		@brief 監視対象の寿命切れやリンク切れを判定する
-		@return 管理対象オブジェクトが存在する場合は true、そうでない場合 は false
-		*/
-		bool check() const noexcept {
-			return !m_weak.expired();
-		}
-
-		/**
-		English
-		@brief returns the number of shared_ptr objects that manage the object
-		@return The number of shared_ptr instances sharing the ownership of the managed object at the instant of the call.
-		Japanese
-		@brief 監視しているshared_ptrオブジェクトの所有者数を取得する
-		@return shared_ptr呼び出しの瞬間に管理対象オブジェクトの所有権を共有しているインスタンスの数。
-		*/
-		long access_count() const noexcept {
-			return m_weak.use_count();
-		}
-
-		/**
-		English
-		@brief Acquire resource monitoring function
-		@return Resource monitoring function
-		Japanese
-		@brief リソース監視機能の取得
-		@return リソース監視機能
-		*/
-		const std::weak_ptr<Component*> & weak_ptr() const noexcept {
-			return m_weak;
-		}
-	private:
-		std::weak_ptr<Component*> m_weak; // 監視機能
 	};
 
 	//==========================================================================
@@ -184,77 +129,22 @@ namespace component
 	//
 	//==========================================================================
 	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	class IReference
+	class IReference : public OriginReference<_Ty, Component>
 	{
 		static_assert(isExtended, "IReference <> : _Ty is not inherited from Component Class");
 	public:
 		IReference() {}
-		IReference(const std::shared_ptr<Component> & _This) : m_weak(_This) {}
-		IReference(const IReference & _Right) : m_weak(_Right.m_weak.lock()) {}
 		~IReference() {}
+
+		using OriginReference<_Ty, Component>::OriginReference;
+		using OriginReference<_Ty, Component>::operator bool;
+		using OriginReference<_Ty, Component>::operator==;
+		using OriginReference<_Ty, Component>::operator!=;
+		using OriginReference<_Ty, Component>::m_weak;
 
 		_Ty * operator->() const noexcept {
 			return (_Ty*)m_weak.lock().get();
 		}
-		operator bool() const noexcept {
-			return !m_weak.expired();
-		}
-		bool operator!=(nullptr_t) const noexcept {
-			return !m_weak.expired();
-		}
-		bool operator==(nullptr_t) const noexcept {
-			return m_weak.expired();
-		}
-		template<class _Ty2>
-		bool operator!=(IReference <_Ty2> &_Right) const noexcept {
-			if (m_weak.expired())return false;
-			if (_Right.m_weak.expired())return false;
-			return m_weak.lock() != _Right.m_weak.lock();
-		}
-		template<class _Ty2>
-		bool operator==(IReference <_Ty2> &_Right) const noexcept {
-			if (m_weak.expired())return false;
-			if (_Right.m_weak.expired())return false;
-			return m_weak.lock() == _Right.m_weak.lock();
-		}
-
-		/**
-		English
-		@brief checks whether the referenced object was already deleted
-		@return True if the managed object exists, false otherwise
-		Japanese
-		@brief 監視対象の寿命切れやリンク切れを判定する
-		@return 管理対象オブジェクトが存在する場合は true、そうでない場合 は false
-		*/
-		bool check() const noexcept {
-			return !m_weak.expired();
-		}
-
-		/**
-		English
-		@brief returns the number of shared_ptr objects that manage the object
-		@return The number of shared_ptr instances sharing the ownership of the managed object at the instant of the call.
-		Japanese
-		@brief 監視しているshared_ptrオブジェクトの所有者数を取得する
-		@return shared_ptr呼び出しの瞬間に管理対象オブジェクトの所有権を共有しているインスタンスの数。
-		*/
-		long access_count() const noexcept {
-			return m_weak.use_count();
-		}
-
-		/**
-		English
-		@brief Acquire resource monitoring function
-		@return Resource monitoring function
-		Japanese
-		@brief リソース監視機能の取得
-		@return リソース監視機能
-		*/
-		const std::weak_ptr<Component> & weak_ptr() const noexcept {
-			return m_weak;
-		}
-	private:
-		std::weak_ptr<Component> m_weak; // 監視機能
 	};
 
 	//==========================================================================
