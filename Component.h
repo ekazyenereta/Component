@@ -25,7 +25,7 @@ namespace component
 	protected:
 		//==========================================================================
 		//
-		// class  : OriginReference 
+		// class  : TemplateReference 
 		//
 		// English
 		// Content: Monitoring function reference class
@@ -35,17 +35,17 @@ namespace component
 		//
 		//==========================================================================
 		template <typename _Ty1, typename _Ty2, bool isExtended = std::is_base_of<Component, _Ty1>::value>
-		class OriginReference
+		class TemplateReference
 		{
-			static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
+			static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from Component Class");
 		public:
 			using element_type = _Ty1;
 			using inheritance_type = _Ty2;
 		public:
-			OriginReference() {}
-			OriginReference(const std::shared_ptr<_Ty2> & _This) : m_weak(_This) {}
-			OriginReference(const OriginReference & _Right) : m_weak(_Right.m_weak.lock()) {}
-			~OriginReference() {}
+			TemplateReference() {}
+			TemplateReference(const std::shared_ptr<_Ty2> & _This) : m_weak(_This) {}
+			TemplateReference(const TemplateReference & _Right) : m_weak(_Right.m_weak.lock()) {}
+			~TemplateReference() {}
 
 			operator bool() const noexcept {
 				return !m_weak.expired();
@@ -57,16 +57,16 @@ namespace component
 				return m_weak.expired();
 			}
 			template<class _Ty3>
-			bool operator!=(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
-				static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
+			bool operator!=(TemplateReference <_Ty3, _Ty2> &_Right) const noexcept {
+				static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from Component Class");
 
 				if (m_weak.expired())return false;
 				if (_Right.weak_ptr().expired())return false;
 				return m_weak.lock() != _Right.weak_ptr().lock();
 			}
 			template<class _Ty3>
-			bool operator==(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
-				static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
+			bool operator==(TemplateReference <_Ty3, _Ty2> &_Right) const noexcept {
+				static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from Component Class");
 
 				if (m_weak.expired())return false;
 				if (_Right.weak_ptr().expired())return false;
@@ -124,15 +124,15 @@ namespace component
 		//
 		//==========================================================================
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		class Parent : public OriginReference<_Ty, Component*>
+		class Parent : public TemplateReference<_Ty, Component*>
 		{
 			static_assert(isExtended, "Parent <> : _Ty is not inherited from Component Class");
-			using reference = OriginReference<_Ty, Component*>;
+			using reference = TemplateReference<_Ty, Component*>;
 		public:
 			Parent() {}
 			~Parent() {}
 
-			using reference::OriginReference;
+			using reference::TemplateReference;
 			using reference::operator bool;
 			using reference::operator==;
 			using reference::operator!=;
@@ -157,15 +157,15 @@ namespace component
 		//
 		//==========================================================================
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		class Reference : public OriginReference<_Ty, Component>
+		class Reference : public TemplateReference<_Ty, Component>
 		{
 			static_assert(isExtended, "Reference <> : _Ty is not inherited from Component Class");
-			using reference = OriginReference<_Ty, Component>;
+			using reference = TemplateReference<_Ty, Component>;
 		public:
 			Reference() {}
 			~Reference() {}
 
-			using reference::OriginReference;
+			using reference::TemplateReference;
 			using reference::operator bool;
 			using reference::operator==;
 			using reference::operator!=;
