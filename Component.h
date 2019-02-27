@@ -492,12 +492,25 @@ namespace component
 		@brief e—v‘f‚ğæ“¾‚·‚é
 		@return e—v‘f
 		*/
-		template<typename _Ty = Component, bool isExtended = std::is_base_of<Component, _Ty>::value>
+		Parent <Component> GetParent() {
+			if (m_component_parent == nullptr)return Parent<Component>();
+			return Parent<Component>(m_component_parent->m_component_this);
+		}
+
+		/**
+		English
+		@brief Get parent element
+		@return Parent element
+		Japanese
+		@brief e—v‘f‚ğæ“¾‚·‚é
+		@return e—v‘f
+		*/
+		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		Parent <_Ty> GetParent() {
 			static_assert(isExtended, "GetParent<> : _Ty is not inherited from Component Class");
 
 			if (m_component_parent == nullptr)return Parent<_Ty>();
-			if (dynamic_cast<_Ty>(m_component_parent) == nullptr)return Parent<_Ty>();
+			if (dynamic_cast<_Ty*>(m_component_parent) == nullptr)return Parent<_Ty>();
 			return Parent<_Ty>(m_component_parent->m_component_this);
 		}
 

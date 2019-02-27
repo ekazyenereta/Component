@@ -72,7 +72,7 @@ int main()
 
 	// Get Parent
 	auto obj12 = obj5->GetParent();
-	auto obj13 = obj5->GetParent<CTest3>();
+	auto obj13 = obj5->GetParent<CTest>();
 
 	// Get Child
 	auto obj14 = gameObject->GetChild();
