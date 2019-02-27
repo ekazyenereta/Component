@@ -571,8 +571,8 @@ namespace component
 		std::string m_component_name; // コンポーネント名
 	};
 
-	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+	template <typename _Ty>
 	using IParent = Component::Parent<_Ty>;
-	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+	template <typename _Ty>
 	using IReference = Component::Reference<_Ty>;
 }
