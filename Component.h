@@ -58,15 +58,19 @@ namespace component
 			}
 			template<class _Ty3>
 			bool operator!=(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
+				static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
+
 				if (m_weak.expired())return false;
-				if (_Right.m_weak.expired())return false;
-				return m_weak.lock() != _Right.m_weak.lock();
+				if (_Right.weak_ptr().expired())return false;
+				return m_weak.lock() != _Right.weak_ptr().lock();
 			}
 			template<class _Ty3>
 			bool operator==(OriginReference <_Ty3, _Ty2> &_Right) const noexcept {
+				static_assert(isExtended, "OriginReference <> : _Ty is not inherited from Component Class");
+
 				if (m_weak.expired())return false;
-				if (_Right.m_weak.expired())return false;
-				return m_weak.lock() == _Right.m_weak.lock();
+				if (_Right.weak_ptr().expired())return false;
+				return m_weak.lock() == _Right.weak_ptr().lock();
 			}
 
 			/**
@@ -206,10 +210,11 @@ namespace component
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		Reference <_Ty> AddComponent() {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
-			std::shared_ptr<Component> _Ptr(new _Ty());
-			m_component_child.emplace_back(_Ptr);
-			_Ptr->m_component_parent = this;
-			return _Ptr;
+
+			std::shared_ptr<Component> ptr(new _Ty());
+			m_component_child.emplace_back(ptr);
+			ptr->m_component_parent = this;
+			return ptr;
 		}
 
 		/**
@@ -223,6 +228,7 @@ namespace component
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value, typename... _Valty>
 		Reference <_Ty> AddComponent(_Valty&&... _Val) {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+
 			std::shared_ptr<Component> ptr(new _Ty((_Val)...));
 			m_component_child.emplace_back(ptr);
 			ptr->m_component_parent = this;
@@ -240,6 +246,7 @@ namespace component
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		Reference <_Ty> GetComponent() {
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
+
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
 				if (dynamic_cast<_Ty*>(itr.get()) != nullptr)return itr;
@@ -302,7 +309,6 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		bool SetComponent(Reference <_Ty> & _Ref) {
-			// コンポーネントが継承されていない場合に出力されます。
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
 			// 監視対象が存在しない場合、失敗
@@ -335,7 +341,6 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		void DestroyComponent() {
-			// コンポーネントが継承されていない場合に出力されます。
 			static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
 
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を破棄する
@@ -361,6 +366,8 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		bool DestroyComponent(Reference <_Ty> & _Ref) {
+			static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
+
 			// 破棄対象の検索
 			auto itr = std::find(m_component_child.begin(), m_component_child.end(), _Ref.weak_ptr().lock());
 			if (itr == m_component_child.end())return false;
@@ -379,7 +386,6 @@ namespace component
 		@return 成功した場合はtrue、失敗した場合はfalseを返します。
 		*/
 		bool DestroyComponent(const std::string & _Name) {
-			// コンポーネントが継承されていない場合に出力されます。
 			bool flag = false;
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を破棄する
 			for (auto itr = m_component_child.begin(); itr != m_component_child.end();) {
@@ -406,10 +412,9 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		bool DestroyComponent(const std::string & _Name) {
-			// コンポーネントが継承されていない場合に出力されます。
 			static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
-			bool flag = false;
 
+			bool flag = false;
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を破棄する
 			for (auto itr = m_component_child.begin(); itr != m_component_child.end();) {
 				// 対象のコンポーネント名が一致しない
@@ -473,10 +478,10 @@ namespace component
 		@return 子要素
 		*/
 		const std::list<Reference<Component>> GetChild() const {
-			std::list<Reference<Component>> Ref;
+			std::list<Reference<Component>> ref;
 			for (auto itr : m_component_child)
-				Ref.push_back(itr);
-			return Ref;
+				ref.push_back(itr);
+			return ref;
 		}
 
 		/**
@@ -489,7 +494,10 @@ namespace component
 		*/
 		template<typename _Ty = Component, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		Parent <_Ty> GetParent() {
+			static_assert(isExtended, "GetParent<> : _Ty is not inherited from Component Class");
+
 			if (m_component_parent == nullptr)return Parent<_Ty>();
+			if (dynamic_cast<_Ty>(m_component_parent) == nullptr)return Parent<_Ty>();
 			return Parent<_Ty>(m_component_parent->m_component_this);
 		}
 
@@ -505,8 +513,8 @@ namespace component
 		*/
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		Reference <_Ty> NodeSearch(const std::string & _Name) {
-			// コンポーネントが継承されていない場合に出力されます。
-			static_assert(isExtended, "WarrantyParent<> : _Ty is not inherited from Component Class");
+			static_assert(isExtended, "NodeSearch<> : _Ty is not inherited from Component Class");
+
 			Reference <_Ty> obj1 = GetComponent<_Ty>(_Name);
 			if (obj1.check())return obj1;
 
@@ -534,6 +542,8 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		bool Aaa(Reference <_Ty> & _Ref) {
+			static_assert(isExtended, "Aaa<> : _Ty is not inherited from Component Class");
+
 			if (m_component_parent == this)return false;
 			auto itr = std::find(m_component_parent->m_component_child.begin(), m_component_parent->m_component_child.end(), _Ref.weak_ptr().lock());
 			if (itr == m_component_parent->m_component_child.end())return false;

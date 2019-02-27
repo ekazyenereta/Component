@@ -29,18 +29,21 @@ protected:
 class CTest : public Test
 {
 public:
+	CTest() :Test("Test1") {}
 	CTest(const std::string & text) :Test(text) {}
 };
 
 class CTest2 : public Test
 {
 public:
+	CTest2() :Test("Test2") {}
 	CTest2(const std::string & text) :Test(text) {}
 };
 
 class CTest3 : public Test
 {
 public:
+	CTest3() :Test("Test3") {}
 	CTest3(const std::string & text) :Test(text) {}
 };
 
@@ -50,35 +53,59 @@ int main()
 	// CRTƒƒ‚ƒŠƒŠ[ƒN‰ÓŠŒŸo
 	// _CrtSetBreakAlloc(0);
 
+	// GameObject
 	std::unique_ptr<component::Component> gameObject(new component::Component("GameObject"));
 	const std::string str_element = " num element >> ";
 
+	// Add Component
 	auto obj1 = gameObject->AddComponent<CTest>("[1]");
 	auto obj2 = gameObject->AddComponent<CTest2>("[2]");
 	auto obj3 = gameObject->AddComponent<CTest3>("[3]");
-	auto obj4 = obj3->AddComponent<CTest>("[4]");
-	auto obj5 = obj3->AddComponent<CTest2>("[5]");
+	auto obj4 = obj3->AddComponent<CTest>();
+	auto obj5 = obj3->AddComponent<CTest2>();
+
+	// Get Component
 	auto obj6 = gameObject->GetComponent<CTest>();
 	auto obj7 = gameObject->GetComponent<CTest>("[1]");
 	auto obj8 = gameObject->GetComponent("[1]");
 	auto obj9 = gameObject->NodeSearch<CTest2>("[8]");
-	auto obj10 = gameObject->GetChild();
-	auto obj11 = obj5.weak_ptr();
+
+	// Get Parent
 	auto obj12 = obj5->GetParent();
+	auto obj13 = obj5->GetParent<CTest3>();
 
-	component::IReference<CTest2> obj13 = obj5;
-	auto obj14 = obj5;
+	// Get Child
+	auto obj14 = gameObject->GetChild();
 
+	// weak_ptr
+	auto obj15 = obj5.weak_ptr();
+
+	// Object Copy
+	component::IReference<CTest2> obj16 = obj5;
+	auto obj17 = obj5;
+	obj17 = obj16;
+
+	// Function
 	obj5.access_count();
 	obj5.check();
 	obj5.weak_ptr();
 
+	// test component function
 	obj1->print();
 	obj2->print();
 	obj3->print();
 	obj4->print();
 	obj5->print();
 
+	// if
+	if (obj1 != obj5) {}
+	if (obj1 == obj5) {}
+	if (obj5 == nullptr) {}
+	if (obj5 != nullptr) {}
+	if (obj5) {}
+	if (!obj5) {}
+
+	// test component function
 	if (obj5)
 	{
 		std::cout << gameObject->GetComponentName() << str_element << gameObject->GetNumChild() << std::endl;
@@ -89,5 +116,6 @@ int main()
 		std::cout << obj5->GetComponentName() << str_element << obj5->GetNumChild() << std::endl;
 	}
 
+	// system
 	return std::system("PAUSE");
 }
