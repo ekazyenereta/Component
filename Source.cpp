@@ -85,6 +85,12 @@ int main()
 	auto obj17 = obj5;
 	obj17 = obj16;
 
+	// Add component
+	gameObject->AddComponent(new CTest("AddComponent"));
+
+	// Set component
+	gameObject->SetComponent(new CTest("SetComponent"));
+
 	// Function
 	obj5.access_count();
 	obj5.check();

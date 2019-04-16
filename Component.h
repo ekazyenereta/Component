@@ -202,6 +202,26 @@ namespace component
 		/**
 		English
 		@brief Please add the component. Failure to inherit Component results in an error.
+		@param _Ref [in] Raw pointer
+		@return Monitoring function reference class
+		Japanese
+		@brief コンポーネントを追加してください。Componentを継承しないとエラーになります。
+		@param _Ref [in] 生ポインタ
+		@return 監視機能の参照クラス
+		*/
+		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+		Reference <_Ty> AddComponent(_Ty * _Ref) {
+			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+
+			std::shared_ptr<Component> ptr(_Ref);
+			m_component_child.emplace_back(ptr);
+			ptr->m_component_parent = this;
+			return ptr;
+		}
+
+		/**
+		English
+		@brief Please add the component. Failure to inherit Component results in an error.
 		@return Monitoring function reference class
 		Japanese
 		@brief コンポーネントを追加してください。Componentを継承しないとエラーになります。
@@ -295,6 +315,23 @@ namespace component
 			for (auto & itr : m_component_child)
 				if (itr->m_component_name == _Name)return itr;
 			return Reference <Component>();
+		}
+
+		/**
+		English
+		@brief Set component
+		@param _Ref [in] Raw pointer
+		@return Returns true on success, false on failure.
+		Japanese
+		@brief Set component
+		@param _Ref [in] 生ポインタ
+		@return 成功した場合にtrue、失敗した場合にfalseを返します。
+		*/
+		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+		bool SetComponent(_Ty * _Ref) {
+			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
+
+			return AddComponent(_Ref) != nullptr;
 		}
 
 		/**
