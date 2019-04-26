@@ -72,6 +72,9 @@ namespace component
 				if (_Right.weak_ptr().expired())return false;
 				return m_weak.lock() == _Right.weak_ptr().lock();
 			}
+			void operator =(nullptr_t) {
+				m_weak.reset();
+			}
 
 			/**
 			English
@@ -136,6 +139,7 @@ namespace component
 			using reference::operator bool;
 			using reference::operator==;
 			using reference::operator!=;
+			using reference::operator=;
 			using reference::m_weak;
 			using reference::element_type;
 			using reference::inheritance_type;
@@ -169,6 +173,7 @@ namespace component
 			using reference::operator bool;
 			using reference::operator==;
 			using reference::operator!=;
+			using reference::operator=;
 			using reference::m_weak;
 			using reference::element_type;
 			using reference::inheritance_type;

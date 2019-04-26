@@ -122,6 +122,9 @@ int main()
 		std::cout << obj5->GetComponentName() << str_element << obj5->GetNumChild() << std::endl;
 	}
 
+	// null
+	obj5 = nullptr;
+
 	// system
 	return std::system("PAUSE");
 }
