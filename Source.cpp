@@ -22,6 +22,16 @@ public:
 	void print() {
 		std::cout << GetComponentName() << " [test] " << m_text << std::endl;
 	}
+	template <typename _Ty>
+	void copy(Reference<_Ty> p) {
+		m_text = p->m_text;
+		m_text = p->m_text;
+	}
+	template <typename _Ty>
+	void copy(Parent<_Ty> p) {
+		m_text = p->m_text;
+		m_text = p->m_text;
+	}
 protected:
 	std::string m_text;
 };
@@ -121,6 +131,8 @@ int main()
 		std::cout << obj4->GetComponentName() << str_element << obj4->GetNumChild() << std::endl;
 		std::cout << obj5->GetComponentName() << str_element << obj5->GetNumChild() << std::endl;
 	}
+
+	obj5->copy(obj2->GetParent<CTest2>());
 
 	// null
 	obj5 = nullptr;
