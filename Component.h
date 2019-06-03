@@ -210,6 +210,18 @@ namespace component
 
 		/**
 		English
+		@brief GameObject
+		@return Monitoring function reference class
+		Japanese
+		@brief GameObject
+		@return 監視機能の参照クラス
+		*/
+		Parent <Component> GameObject() {
+			return Parent<Component>(m_component_this);
+		}
+
+		/**
+		English
 		@brief Please add the component. Failure to inherit Component results in an error.
 		@param _Ref [in] Raw pointer
 		@return Monitoring function reference class

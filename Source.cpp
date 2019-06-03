@@ -121,6 +121,12 @@ int main()
 	if (obj5) {}
 	if (!obj5) {}
 
+	obj5->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()
+		->GameObject()->GameObject()->GameObject()->GameObject()
+		->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()
+		->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()
+		->GameObject()->GameObject();
+
 	// test component function
 	if (obj5)
 	{
