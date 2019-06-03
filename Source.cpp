@@ -132,7 +132,9 @@ int main()
 		std::cout << obj5->GetComponentName() << str_element << obj5->GetNumChild() << std::endl;
 	}
 
-	obj5->copy(obj2->GetParent<CTest2>());
+	// GameObject Parent null
+	if(gameObject->GetParent() == nullptr)
+		std::cout << "nullptr" << std::endl;
 
 	// null
 	obj5 = nullptr;

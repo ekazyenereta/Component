@@ -60,16 +60,20 @@ namespace component
 			bool operator!=(TemplateReference <_Ty3, _Ty2> &_Right) const noexcept {
 				static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from Component Class");
 
-				if (m_weak.expired())return false;
-				if (_Right.weak_ptr().expired())return false;
+				if (m_weak.expired())
+					return false;
+				if (_Right.weak_ptr().expired())
+					return false;
 				return m_weak.lock() != _Right.weak_ptr().lock();
 			}
 			template<class _Ty3>
 			bool operator==(TemplateReference <_Ty3, _Ty2> &_Right) const noexcept {
 				static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from Component Class");
 
-				if (m_weak.expired())return false;
-				if (_Right.weak_ptr().expired())return false;
+				if (m_weak.expired())
+					return false;
+				if (_Right.weak_ptr().expired())
+					return false;
 				return m_weak.lock() == _Right.weak_ptr().lock();
 			}
 			void operator =(nullptr_t) {
@@ -274,7 +278,8 @@ namespace component
 
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
-				if (dynamic_cast<_Ty*>(itr.get()) != nullptr)return itr;
+				if (dynamic_cast<_Ty*>(itr.get()) != nullptr)
+					return itr;
 			return Reference <_Ty>();
 		}
 
@@ -295,10 +300,10 @@ namespace component
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child) {
 				// 対象コンポーネント名の取得に失敗
-				if (itr->m_component_name != _Name)continue;
+				if (itr->m_component_name != _Name)
+					continue;
 
 				// 対象コンポーネントの取得
-				
 				if (dynamic_cast<_Ty*>((*itr->m_component_this)) != nullptr)
 					return itr;
 			}
@@ -318,7 +323,8 @@ namespace component
 		Reference <Component> GetComponent(const std::string & _Name) {
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
-				if (itr->m_component_name == _Name)return itr;
+				if (itr->m_component_name == _Name)
+					return itr;
 			return Reference <Component>();
 		}
 
@@ -354,12 +360,15 @@ namespace component
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
 			// 監視対象が存在しない場合、失敗
-			if (!_Ref.check())return false;
-			if (_Ref.weak_ptr().lock().get() == this)return false;
+			if (!_Ref.check())
+				return false;
+			if (_Ref.weak_ptr().lock().get() == this)
+				return false;
 
 			// 対象からデータを取得する
 			std::shared_ptr<Component> ptr = _Ref.weak_ptr().lock();
-			if (!_Ref->Aaa(_Ref))return false;
+			if (!_Ref->Aaa(_Ref))
+				return false;
 			m_component_child.emplace_back(ptr);
 			ptr->m_component_parent = this;
 			return true;
@@ -412,7 +421,8 @@ namespace component
 
 			// 破棄対象の検索
 			auto itr = std::find(m_component_child.begin(), m_component_child.end(), _Ref.weak_ptr().lock());
-			if (itr == m_component_child.end())return false;
+			if (itr == m_component_child.end())
+				return false;
 			m_component_child.erase(itr);
 			return true;
 		}
@@ -535,7 +545,8 @@ namespace component
 		@return 親要素
 		*/
 		Parent <Component> GetParent() {
-			if (m_component_parent == nullptr)return Parent<Component>();
+			if (m_component_parent == nullptr)
+				return Parent<Component>();
 			return Parent<Component>(m_component_parent->m_component_this);
 		}
 
@@ -551,8 +562,10 @@ namespace component
 		Parent <_Ty> GetParent() {
 			static_assert(isExtended, "GetParent<> : _Ty is not inherited from Component Class");
 
-			if (m_component_parent == nullptr)return Parent<_Ty>();
-			if (dynamic_cast<_Ty*>(m_component_parent) == nullptr)return Parent<_Ty>();
+			if (m_component_parent == nullptr)
+				return Parent<_Ty>();
+			if (dynamic_cast<_Ty*>(m_component_parent) == nullptr)
+				return Parent<_Ty>();
 			return Parent<_Ty>(m_component_parent->m_component_this);
 		}
 
@@ -571,11 +584,13 @@ namespace component
 			static_assert(isExtended, "NodeSearch<> : _Ty is not inherited from Component Class");
 
 			Reference <_Ty> obj1 = GetComponent<_Ty>(_Name);
-			if (obj1.check())return obj1;
+			if (obj1.check())
+				return obj1;
 
 			for (auto & itr : m_component_child) {
 				Reference <_Ty> obj2 = itr->NodeSearch<_Ty>(_Name);
-				if (obj2.check())return obj2;
+				if (obj2.check())
+					return obj2;
 			}
 			return obj1;
 		}
@@ -599,9 +614,11 @@ namespace component
 		bool Aaa(Reference <_Ty> & _Ref) {
 			static_assert(isExtended, "Aaa<> : _Ty is not inherited from Component Class");
 
-			if (m_component_parent == this)return false;
+			if (m_component_parent == this)
+				return false;
 			auto itr = std::find(m_component_parent->m_component_child.begin(), m_component_parent->m_component_child.end(), _Ref.weak_ptr().lock());
-			if (itr == m_component_parent->m_component_child.end())return false;
+			if (itr == m_component_parent->m_component_child.end())
+				return false;
 			m_component_parent->m_component_child.erase(itr);
 			m_component_parent = nullptr;
 			return true;
