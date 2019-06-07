@@ -22,9 +22,7 @@ namespace reference
 	// Content: 監視機能の参照クラス
 	//
 	//==========================================================================
-	template <typename _OwnedClass,
-		typename _BaseClass,
-		bool isExtended = std::is_base_of<_BaseClass, _OwnedClass>::value>
+	template <typename _OwnedClass, typename _BaseClass, bool isExtended = std::is_base_of<_BaseClass, _OwnedClass>::value>
 	class TemplateReference
 	{
 		static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from BaseClass Class");
