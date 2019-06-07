@@ -23,12 +23,7 @@ public:
 		std::cout << GetComponentName() << " [test] " << m_text << std::endl;
 	}
 	template <typename _Ty>
-	void copy(Reference<_Ty> p) {
-		m_text = p->m_text;
-		m_text = p->m_text;
-	}
-	template <typename _Ty>
-	void copy(Parent<_Ty> p) {
+	void copy(component::Reference<_Ty> p) {
 		m_text = p->m_text;
 		m_text = p->m_text;
 	}
@@ -74,6 +69,8 @@ int main()
 	auto obj4 = obj3->AddComponent<CTest>();
 	auto obj5 = obj3->AddComponent<CTest2>();
 
+	obj1->GameObject();
+
 	// Get Component
 	auto obj6 = gameObject->GetComponent<CTest>();
 	auto obj7 = gameObject->GetComponent<CTest>("[1]");
@@ -91,7 +88,7 @@ int main()
 	auto obj15 = obj5.weak_ptr();
 
 	// Object Copy
-	component::IReference<CTest2> obj16 = obj5;
+	component::Reference<CTest2> obj16 = obj5;
 	auto obj17 = obj5;
 	obj17 = obj16;
 
@@ -100,6 +97,7 @@ int main()
 
 	// Set component
 	gameObject->SetComponent(new CTest("SetComponent"));
+	gameObject->SetComponent(obj5);
 
 	// Function
 	obj5.access_count();
