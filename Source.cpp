@@ -54,10 +54,29 @@ namespace text
 		Text3(const std::string & text) :Text(text) {}
 	};
 
+	class Text4 : public component::Component
+	{
+	public:
+		Text4() {}
+		Text4(const std::string & text) : m_text(text), Component(text) {}
+		~Text4() {}
+		void print() {
+			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
+		}
+		template <typename _Ty>
+		void copy(component::Reference<_Ty> p) {
+			m_text = p->m_text;
+			m_text = p->m_text;
+		}
+	protected:
+		std::string m_text;
+	};
+
 	using ReferenceText = component::Reference<Text>;
 	using ReferenceText1 = component::Reference<Text1>;
 	using ReferenceText2 = component::Reference<Text2>;
 	using ReferenceText3 = component::Reference<Text3>;
+	using ReferenceText4 = component::Reference<Text4>;
 }
 
 int main()
@@ -165,12 +184,56 @@ int main()
 	//
 	//==========================================================================
 	auto com1 = text3->AddComponent(new text::Text1("Comparison operator 1"));
-	auto com2 = text3->AddComponent(new text::Text2("Comparison operator 2"));
-	auto com3 = text3->AddComponent(new text::Text("Comparison operator 3"));
+	auto com2 = text3->AddComponent(new text::Text1("Comparison operator 2"));
+	auto com3 = com1;
 
-	if (com1.weak_ptr().lock() == com3.weak_ptr().lock()) {
-		com1 = com1;
-	}
+	auto com1_weak_ptr = com1.weak_ptr();
+	auto com2_weak_ptr = com2.weak_ptr();
+
+	auto com1_shared_ptr = com1_weak_ptr.lock();
+	auto com2_shared_ptr = com2_weak_ptr.lock();
+
+	// 同じ
+	if (com1.check() == com3.check())
+		if (com1 == com3)
+			com1 = com3;
+
+	// 同じではない
+	if (com1.check() == com2.check())
+		if (com1 != com2)
+			com1 = com2;
+
+	// 管理しているデータがある
+	if (com1)
+		com1 = nullptr;
+
+	// 管理しているデータがない
+	if (!com1)
+		com1 = com3;
+
+	// 管理しているデータがある
+	if (com1 != nullptr)
+		com1 = nullptr;
+
+	// 管理しているデータがない
+	if (com1 == nullptr)
+		com1 = com3;
+
+	// 同じ
+	if (com1.check())
+		if (com1 == com1_weak_ptr)
+			com1 = com1;
+	if (com1.check())
+		if (com1 == com1_shared_ptr)
+			com1 = com1;
+
+	// 同じではない
+	if (com1.check())
+		if (com1 != com2_weak_ptr)
+			com1 = com1;
+	if (com1.check())
+		if (com1 != com2_shared_ptr)
+			com1 = com1;
 
 	//==========================================================================
 	//
@@ -196,6 +259,12 @@ int main()
 
 	// 子リストの取得
 	auto otherObjChildList = otherObj->GetChild();
+
+	//==========================================================================
+	//
+	// 表示
+	//
+	//==========================================================================
 
 	// test component function
 	text1->print();

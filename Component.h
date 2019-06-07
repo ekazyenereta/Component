@@ -44,17 +44,17 @@ namespace component
 		bool operator==(nullptr_t) const noexcept {
 			return m_weak.expired();
 		}
-		bool operator==(const std::shared_ptr<_OwnedObject>&_Right) const noexcept {
-			return m_weak.lock() == _Right;
+		bool operator==(const std::shared_ptr<_BaseClass>&_Right) const noexcept {
+			return m_weak.lock().get() == _Right.get();
 		}
-		bool operator!=(const std::shared_ptr<_OwnedObject>&_Right) const noexcept {
-			return m_weak.lock() != _Right;
+		bool operator!=(const std::shared_ptr<_BaseClass>&_Right) const noexcept {
+			return m_weak.lock().get() != _Right.get();
 		}
-		bool operator==(const std::weak_ptr<_OwnedObject>&_Right) const noexcept {
-			return m_weak == _Right;
+		bool operator==(const std::weak_ptr<_BaseClass>&_Right) const noexcept {
+			return m_weak.lock().get() == _Right.lock().get();
 		}
-		bool operator!=(const std::weak_ptr<_OwnedObject>&_Right) const noexcept {
-			return m_weak != _Right;
+		bool operator!=(const std::weak_ptr<_BaseClass>&_Right) const noexcept {
+			return m_weak.lock().get() != _Right.lock().get();
 		}
 		template<class _Ty3>
 		bool operator!=(TemplateReference <_Ty3, _BaseClass> &_Right) const noexcept {
