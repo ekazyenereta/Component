@@ -13,44 +13,52 @@
 
 #include "Component.h"
 
-class Test : public component::Component
+namespace text
 {
-public:
-	Test() {}
-	Test(const std::string & text) : m_text(text), Component(text) {}
-	~Test() {}
-	void print() {
-		std::cout << GetComponentName() << " [test] " << m_text << std::endl;
-	}
-	template <typename _Ty>
-	void copy(component::Reference<_Ty> p) {
-		m_text = p->m_text;
-		m_text = p->m_text;
-	}
-protected:
-	std::string m_text;
-};
+	class Text : public component::Component
+	{
+	public:
+		Text() {}
+		Text(const std::string & text) : m_text(text), Component(text) {}
+		~Text() {}
+		void print() {
+			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
+		}
+		template <typename _Ty>
+		void copy(component::Reference<_Ty> p) {
+			m_text = p->m_text;
+			m_text = p->m_text;
+		}
+	protected:
+		std::string m_text;
+	};
 
-class CTest : public Test
-{
-public:
-	CTest() :Test("Test1") {}
-	CTest(const std::string & text) :Test(text) {}
-};
+	class Text1 : public Text
+	{
+	public:
+		Text1() :Text("text1") {}
+		Text1(const std::string & text) :Text(text) {}
+	};
 
-class CTest2 : public Test
-{
-public:
-	CTest2() :Test("Test2") {}
-	CTest2(const std::string & text) :Test(text) {}
-};
+	class Text2 : public Text
+	{
+	public:
+		Text2() :Text("text2") {}
+		Text2(const std::string & text) :Text(text) {}
+	};
 
-class CTest3 : public Test
-{
-public:
-	CTest3() :Test("Test3") {}
-	CTest3(const std::string & text) :Test(text) {}
-};
+	class Text3 : public Text
+	{
+	public:
+		Text3() :Text("text3") {}
+		Text3(const std::string & text) :Text(text) {}
+	};
+
+	using ReferenceText = component::Reference<Text>;
+	using ReferenceText1 = component::Reference<Text1>;
+	using ReferenceText2 = component::Reference<Text2>;
+	using ReferenceText3 = component::Reference<Text3>;
+}
 
 int main()
 {
@@ -58,90 +66,158 @@ int main()
 	// CRTメモリリーク箇所検出
 	// _CrtSetBreakAlloc(0);
 
-	// GameObject
 	std::unique_ptr<component::Component> gameObject(new component::Component("GameObject"));
 	const std::string str_element = " num element >> ";
 
-	// Add Component
-	auto obj1 = gameObject->AddComponent<CTest>("[1]");
-	auto obj2 = gameObject->AddComponent<CTest2>("[2]");
-	auto obj3 = gameObject->AddComponent<CTest3>("[3]");
-	auto obj4 = obj3->AddComponent<CTest>();
-	auto obj5 = obj3->AddComponent<CTest2>();
+	//==========================================================================
+	//
+	// オブジェクトを追加します
+	//
+	//==========================================================================
+	auto text1 = gameObject->AddComponent(new text::Text1);
+	auto text2 = gameObject->AddComponent(new text::Text2);
+	auto text3 = gameObject->AddComponent(new text::Text3);
 
-	obj1->GameObject();
+	// テキスト3に追加します
+	auto text4 = text3->AddComponent(new text::Text("text4"));
+	auto text5 = text3->AddComponent(new text::Text("text5"));
 
-	// Get Component
-	auto obj6 = gameObject->GetComponent<CTest>();
-	auto obj7 = gameObject->GetComponent<CTest>("[1]");
-	auto obj8 = gameObject->GetComponent("[1]");
-	auto obj9 = gameObject->NodeSearch<CTest2>("[8]");
+	// template なので、このような書き方ができます
+	text3->AddComponent<text::Text>();
 
-	// Get Parent
-	auto obj12 = obj5->GetParent();
-	auto obj13 = obj5->GetParent<CTest>();
+	// コンストラクに何かしら引数があればこのような書き方ができます
+	text3->AddComponent<text::Text>("text6");
 
-	// Get Child
-	auto obj14 = gameObject->GetChild();
+	//==========================================================================
+	//
+	// オブジェクトを取得しよう
+	//
+	//==========================================================================
 
-	// weak_ptr
-	auto obj15 = obj5.weak_ptr();
+	// gameObject の子に存在しているので取得できます
+	auto getText1 = gameObject->GetComponent<text::Text1>();
 
-	// Object Copy
-	component::Reference<CTest2> obj16 = obj5;
-	auto obj17 = obj5;
-	obj17 = obj16;
+	// text3 には text6 という名前のオブジェクトがないので nullptr が返ります
+	auto getText2 = text3->GetComponent("text6");
 
-	// Add component
-	gameObject->AddComponent(new CTest("AddComponent"));
+	// text3 には Text という機能に text5 をいう名前の付いたオブジェクトがあるので取得できます
+	auto getText3 = text3->GetComponent<text::Text>("text5");
 
-	// Set component
-	gameObject->SetComponent(new CTest("SetComponent"));
-	gameObject->SetComponent(obj5);
+	//==========================================================================
+	//
+	// オブジェクトの入れ替えをやってみよう
+	//
+	//==========================================================================
+	auto tradeObj1 = text1->AddComponent(new text::Text("trade1"));
+	auto tradeObj2 = text2->AddComponent(new text::Text("trade2"));
 
-	// Function
-	obj5.access_count();
-	obj5.check();
-	obj5.weak_ptr();
+	// trade2 を trade1 の子供にします
+	tradeObj1->SetComponent(tradeObj2);
+
+	// trade1 と trade2 を text3 の子にします
+	text3->SetComponent(tradeObj1);
+	text3->SetComponent(tradeObj2);
+
+	// AddComponent と似た追加の仕方ができますが、戻り値はboolです
+	text3->SetComponent(new text::Text("trade3"));
+
+	//==========================================================================
+	//
+	// オブジェクトを破棄します
+	//
+	//==========================================================================
+	auto desObj = text3->AddComponent(new text::Text("desObj"));
+	desObj->AddComponent<text::Text1>();
+	desObj->AddComponent<text::Text2>();
+	desObj->AddComponent<text::Text3>();
+
+	// 子を全て破棄します
+	desObj->DestroyComponent();
+
+	desObj->AddComponent(new text::Text("obj1"));
+	desObj->AddComponent(new text::Text("obj2"));
+
+	// 子の名前を指定して破棄します
+	desObj->DestroyComponent("obj1");
+
+	// 機能と子の名前を指定して破棄します
+	desObj->DestroyComponent<text::Text>("obj2");
+
+	// 親が違うので破棄はできません
+	if (!text1->DestroyComponent(desObj))
+		// 自分で自分は消せません
+		if (!desObj->DestroyComponent(desObj))
+			// 親なら消すことができます
+			text3->DestroyComponent(desObj);
+
+	desObj = text3->AddComponent(new text::Text("desObj"));
+	// 親を呼び出して、親オブジェクトから破棄の処理を実行することができます
+	if (desObj->GetParent() != nullptr)
+		desObj->GetParent()->DestroyComponent(desObj);
+
+	desObj = text3->AddComponent(new text::Text("desObj"));
+	// メンバ変数ではない 破棄専用関数に入れるだけで破棄が可能です
+	component::Destroy(desObj);
+
+	//==========================================================================
+	//
+	// 比較演算子
+	//
+	//==========================================================================
+	auto com1 = text3->AddComponent(new text::Text1("Comparison operator 1"));
+	auto com2 = text3->AddComponent(new text::Text2("Comparison operator 2"));
+	auto com3 = text3->AddComponent(new text::Text("Comparison operator 3"));
+
+	if (com1.weak_ptr().lock() == com3.weak_ptr().lock()) {
+		com1 = com1;
+	}
+
+	//==========================================================================
+	//
+	// その他
+	//
+	//==========================================================================
+	auto otherObj = text3->AddComponent(new text::Text("other"));
+
+	// 自身を取得します
+	auto otherObj1 = otherObj->GameObject();
+	auto otherObj2 = otherObj->GameObject<text::Text>();
+
+	// 親を取得します
+	auto otherParent1 = otherObj->GetParent();
+	auto otherParent2 = otherObj->GetParent<text::Text>();
+
+	// 名前の変更,取得
+	otherObj->SetComponentName("Other");
+	auto otherObjName = otherObj->GetComponentName();
+
+	// 子の数の取得
+	auto otherObjNumChild = otherObj->GetNumChild();
+
+	// 子リストの取得
+	auto otherObjChildList = otherObj->GetChild();
 
 	// test component function
-	obj1->print();
-	obj2->print();
-	obj3->print();
-	obj4->print();
-	obj5->print();
-
-	// if
-	if (obj1 != obj5) {}
-	if (obj1 == obj5) {}
-	if (obj5 == nullptr) {}
-	if (obj5 != nullptr) {}
-	if (obj5) {}
-	if (!obj5) {}
-
-	obj5->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()
-		->GameObject()->GameObject()->GameObject()->GameObject()
-		->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()
-		->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()->GameObject()
-		->GameObject()->GameObject();
+	text1->print();
+	text2->print();
+	text3->print();
+	text4->print();
+	text5->print();
 
 	// test component function
-	if (obj5)
+	if (text5)
 	{
 		std::cout << gameObject->GetComponentName() << str_element << gameObject->GetNumChild() << std::endl;
-		std::cout << obj1->GetComponentName() << str_element << obj1->GetNumChild() << std::endl;
-		std::cout << obj2->GetComponentName() << str_element << obj2->GetNumChild() << std::endl;
-		std::cout << obj3->GetComponentName() << str_element << obj3->GetNumChild() << std::endl;
-		std::cout << obj4->GetComponentName() << str_element << obj4->GetNumChild() << std::endl;
-		std::cout << obj5->GetComponentName() << str_element << obj5->GetNumChild() << std::endl;
+		std::cout << text1->GetComponentName() << str_element << text1->GetNumChild() << std::endl;
+		std::cout << text2->GetComponentName() << str_element << text2->GetNumChild() << std::endl;
+		std::cout << text3->GetComponentName() << str_element << text3->GetNumChild() << std::endl;
+		std::cout << text4->GetComponentName() << str_element << text4->GetNumChild() << std::endl;
+		std::cout << text5->GetComponentName() << str_element << text5->GetNumChild() << std::endl;
 	}
 
 	// GameObject Parent null
 	if(gameObject->GetParent() == nullptr)
 		std::cout << "nullptr" << std::endl;
-
-	// null
-	obj5 = nullptr;
 
 	// system
 	return std::system("PAUSE");
