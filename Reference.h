@@ -1,5 +1,5 @@
 //==========================================================================
-// TemplateReference [TemplateReference.h]
+// Reference [Reference.h]
 // author: ekazyenereta
 //==========================================================================
 #pragma once
@@ -55,8 +55,6 @@ namespace reference
 		}
 		template<class _Ty3>
 		bool operator!=(TemplateReference <_Ty3, _BaseClass>& _Right) const noexcept {
-			static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from BaseClass Class");
-
 			if (m_weak.expired())
 				return false;
 			if (_Right.weak_ptr().expired())
@@ -65,8 +63,6 @@ namespace reference
 		}
 		template<class _Ty3>
 		bool operator==(TemplateReference <_Ty3, _BaseClass>& _Right) const noexcept {
-			static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from BaseClass Class");
-
 			if (m_weak.expired())
 				return false;
 			if (_Right.weak_ptr().expired())

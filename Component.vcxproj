@@ -116,7 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Component.h" />
-    <ClInclude Include="TemplateReference.h" />
+    <ClInclude Include="Reference.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />

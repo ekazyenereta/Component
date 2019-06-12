@@ -12,7 +12,7 @@
 #include <memory>
 #include <list>
 
-#include "TemplateReference.h"
+#include "Reference.h"
 
 namespace component
 {
