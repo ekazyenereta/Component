@@ -41,16 +41,18 @@ namespace reference
 		bool operator==(nullptr_t) const noexcept {
 			return m_weak.expired();
 		}
-		bool operator==(const std::shared_ptr<_BaseClass>& _Right) const noexcept {
-			return m_weak.lock().get() == _Right.get();
-		}
-		bool operator!=(const std::shared_ptr<_BaseClass>& _Right) const noexcept {
-			return m_weak.lock().get() != _Right.get();
-		}
 		bool operator==(const std::weak_ptr<_BaseClass>& _Right) const noexcept {
+			if (m_weak.expired())
+				return false;
+			if (_Right.expired())
+				return false;
 			return m_weak.lock().get() == _Right.lock().get();
 		}
 		bool operator!=(const std::weak_ptr<_BaseClass>& _Right) const noexcept {
+			if (m_weak.expired())
+				return false;
+			if (_Right.expired())
+				return false;
 			return m_weak.lock().get() != _Right.lock().get();
 		}
 		template<class _Ty3>
