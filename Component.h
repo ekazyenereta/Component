@@ -16,22 +16,6 @@
 
 namespace component
 {
-
-	class Component;
-	template <typename _Ty>
-	using Reference = reference::TemplateReference<_Ty, Component>;
-
-	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	void Destroy(Reference<_Ty> & _Ref)
-	{
-		static_assert(isExtended, "Destroy <> : _Ty is not inherited from Component Class");
-		if (!_Ref.check())
-			return;
-		if (_Ref->GetParent() == nullptr)
-			return;
-		_Ref->GetParent()->DestroyComponent(_Ref);
-	}
-
 	//==========================================================================
 	//
 	// class  : Component
@@ -40,11 +24,15 @@ namespace component
 	//==========================================================================
 	class Component
 	{
+	public:
+		template <typename _Ty>
+		using IReference = reference::TemplateReference<_Ty, Component>;
 	private:
 		// Copy prohibited (C++11)
 		Component(const Component &) = delete;
-		// Copy prohibited (C++11)
 		Component(Component&&) = delete;
+		Component &operator=(const Component &) = delete;
+		Component &operator=(Component&&) = delete;
 	public:
 		Component() : m_component_parent(nullptr) {
 			size_t size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
@@ -70,7 +58,7 @@ namespace component
 		@brief GameObject
 		@return 監視機能の参照クラス
 		*/
-		Reference <Component> GameObject() {
+		IReference <Component> GameObject() {
 			return m_component_this;
 		}
 
@@ -83,7 +71,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> GameObject() {
+		IReference <_Ty> GameObject() {
 			return m_component_this;
 		}
 
@@ -98,7 +86,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> AddComponent(_Ty * _Ref) {
+		IReference <_Ty> AddComponent(_Ty * _Ref) {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
 			std::shared_ptr<Component> ptr(_Ref);
@@ -116,7 +104,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> AddComponent() {
+		IReference <_Ty> AddComponent() {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
 			std::shared_ptr<Component> ptr(new _Ty());
@@ -134,7 +122,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value, typename... _Valty>
-		Reference <_Ty> AddComponent(_Valty&&... _Val) {
+		IReference <_Ty> AddComponent(_Valty&&... _Val) {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
 			std::shared_ptr<Component> ptr(new _Ty((_Val)...));
@@ -152,14 +140,14 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> GetComponent() {
+		IReference <_Ty> GetComponent() {
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
 				if (dynamic_cast<_Ty*>(itr.get()) != nullptr)
 					return itr;
-			return Reference <_Ty>();
+			return IReference <_Ty>();
 		}
 
 		/**
@@ -173,7 +161,7 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> GetComponent(const std::string & _Name) {
+		IReference <_Ty> GetComponent(const std::string & _Name) {
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
@@ -186,7 +174,7 @@ namespace component
 				if (dynamic_cast<_Ty*>(itr->m_component_this.get()) != nullptr)
 					return itr;
 			}
-			return Reference <_Ty>();
+			return IReference <_Ty>();
 		}
 
 		/**
@@ -199,12 +187,12 @@ namespace component
 		@param _Name [in] コンポーネント名
 		@return 監視機能の参照クラス
 		*/
-		Reference <Component> GetComponent(const std::string & _Name) {
+		IReference <Component> GetComponent(const std::string & _Name) {
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
 			for (auto & itr : m_component_child)
 				if (itr->m_component_name == _Name)
 					return itr;
-			return Reference <Component>();
+			return IReference <Component>();
 		}
 
 		/**
@@ -235,7 +223,7 @@ namespace component
 		@return 成功した場合にtrue、失敗した場合にfalseを返します。
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool SetComponent(Reference <_Ty> & _Ref) {
+		bool SetComponent(IReference <_Ty> & _Ref) {
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
 			// 監視対象が存在しない場合、失敗
@@ -295,7 +283,7 @@ namespace component
 		@return 成功した場合はtrue、失敗した場合はfalseを返します。
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool DestroyComponent(Reference <_Ty> & _Ref) {
+		bool DestroyComponent(IReference <_Ty> & _Ref) {
 			static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
 
 			// 破棄対象の検索
@@ -409,8 +397,8 @@ namespace component
 		@brief 子要素を取得する
 		@return 子要素
 		*/
-		const std::list<Reference<Component>> GetChild() const {
-			std::list<Reference<Component>> ref;
+		const std::list<IReference<Component>> GetChild() const {
+			std::list<IReference<Component>> ref;
 			for (auto itr : m_component_child)
 				ref.push_back(itr);
 			return ref;
@@ -424,9 +412,9 @@ namespace component
 		@brief 親要素を取得する
 		@return 親要素
 		*/
-		Reference <Component> GetParent() {
+		IReference <Component> GetParent() {
 			if (m_component_parent == nullptr)
-				return Reference<Component>();
+				return IReference<Component>();
 			return m_component_parent;
 		}
 
@@ -439,13 +427,13 @@ namespace component
 		@return 親要素
 		*/
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> GetParent() {
+		IReference <_Ty> GetParent() {
 			static_assert(isExtended, "GetParent<> : _Ty is not inherited from Component Class");
 
 			if (m_component_parent == nullptr)
-				return Reference<_Ty>();
+				return IReference<_Ty>();
 			if (m_component_parent._dynamic_cast<_Ty>(nullptr))
-				return Reference<_Ty>();
+				return IReference<_Ty>();
 			return m_component_parent.weak_ptr().lock();
 		}
 
@@ -460,29 +448,19 @@ namespace component
 		@return 監視機能の参照クラス
 		*/
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Reference <_Ty> NodeSearch(const std::string & _Name) {
+		IReference <_Ty> NodeSearch(const std::string & _Name) {
 			static_assert(isExtended, "NodeSearch<> : _Ty is not inherited from Component Class");
 
-			Reference <_Ty> obj1 = GetComponent<_Ty>(_Name);
+			IReference <_Ty> obj1 = GetComponent<_Ty>(_Name);
 			if (obj1.check())
 				return obj1;
 
 			for (auto & itr : m_component_child) {
-				Reference <_Ty> obj2 = itr->NodeSearch<_Ty>(_Name);
+				IReference <_Ty> obj2 = itr->NodeSearch<_Ty>(_Name);
 				if (obj2.check())
 					return obj2;
 			}
 			return obj1;
-		}
-
-		Component &operator=(const Component & _This) {
-			_This;
-			return (*this);
-		}
-
-		Component &operator=(Component&& _This) {
-			_This;
-			return (*this);
 		}
 	private:
 		/**
@@ -491,7 +469,7 @@ namespace component
 		@return 放棄成功時に true が返ります
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool Aaa(Reference <_Ty> & _Ref) {
+		bool Aaa(IReference <_Ty> & _Ref) {
 			static_assert(isExtended, "Aaa<> : _Ty is not inherited from Component Class");
 
 			if (m_component_parent == m_component_this)
@@ -506,7 +484,20 @@ namespace component
 	private:
 		std::list<std::shared_ptr<Component>> m_component_child; // コンポーネントの管理
 		std::shared_ptr<Component> m_component_this; // 自身
-		Reference<Component> m_component_parent; // 親コンポーネント
+		IReference<Component> m_component_parent; // 親コンポーネント
 		std::string m_component_name; // コンポーネント名
 	};
+
+	template <typename _Ty>
+	using Reference = Component::IReference<_Ty>;
+	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+	void Destroy(Reference<_Ty> & _Ref)
+	{
+		static_assert(isExtended, "Destroy <> : _Ty is not inherited from Component Class");
+		if (!_Ref.check())
+			return;
+		if (_Ref->GetParent() == nullptr)
+			return;
+		_Ref->GetParent()->DestroyComponent(_Ref);
+	}
 }
