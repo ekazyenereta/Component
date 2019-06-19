@@ -59,17 +59,17 @@ namespace reference
 		bool operator!=(TemplateReference <_Ty3, _BaseClass>& _Right) const noexcept {
 			if (m_weak.expired())
 				return false;
-			if (_Right.weak_ptr().expired())
+			if (_Right.m_weak.expired())
 				return false;
-			return m_weak.lock() != _Right.weak_ptr().lock();
+			return m_weak.lock() != _Right.m_weak.lock();
 		}
 		template<class _Ty3>
 		bool operator==(TemplateReference <_Ty3, _BaseClass>& _Right) const noexcept {
 			if (m_weak.expired())
 				return false;
-			if (_Right.weak_ptr().expired())
+			if (_Right.m_weak.expired())
 				return false;
-			return m_weak.lock() == _Right.weak_ptr().lock();
+			return m_weak.lock() == _Right.m_weak.lock();
 		}
 		void operator =(nullptr_t) {
 			m_weak.reset();
@@ -97,18 +97,6 @@ namespace reference
 		*/
 		long access_count() const noexcept {
 			return m_weak.use_count();
-		}
-
-		/**
-		English
-		@brief Acquire resource monitoring function
-		@return Resource monitoring function
-		Japanese
-		@brief リソース監視機能の取得
-		@return リソース監視機能
-		*/
-		const std::weak_ptr<_BaseClass>& weak_ptr() const noexcept {
-			return m_weak;
 		}
 
 		_OwnedClass* operator->() const noexcept {

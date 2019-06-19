@@ -187,12 +187,6 @@ int main()
 	auto com2 = text3->AddComponent(new text::Text1("Comparison operator 2"));
 	auto com3 = com1;
 
-	auto com1_weak_ptr = com1.weak_ptr();
-	auto com2_weak_ptr = com2.weak_ptr();
-
-	auto com1_shared_ptr = com1_weak_ptr.lock();
-	auto com2_shared_ptr = com2_weak_ptr.lock();
-
 	// “¯‚¶
 	if (com1.check() == com3.check())
 		if (com1 == com3)
@@ -218,22 +212,6 @@ int main()
 	// ŠÇ—‚µ‚Ä‚¢‚éƒf[ƒ^‚ª‚È‚¢
 	if (com1 == nullptr)
 		com1 = com3;
-
-	// “¯‚¶
-	if (com1.check())
-		if (com1 == com1_weak_ptr)
-			com1 = com1;
-	if (com1.check())
-		if (com1 == com1_shared_ptr)
-			com1 = com1;
-
-	// “¯‚¶‚Å‚Í‚È‚¢
-	if (com1.check())
-		if (com1 != com2_weak_ptr)
-			com1 = com1;
-	if (com1.check())
-		if (com1 != com2_shared_ptr)
-			com1 = com1;
 
 	//==========================================================================
 	//

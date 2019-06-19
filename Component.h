@@ -39,10 +39,16 @@ namespace component
 			std::unique_ptr<char[]> buf(new char[size]);
 			snprintf(buf.get(), size, "%p", this);
 			m_component_name = std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
-			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
+			m_component_this = std::shared_ptr<Component>(this, [](Component* p)
+			{
+				p = nullptr;
+			});
 		}
 		Component(const std::string & _Name) :m_component_name(_Name), m_component_parent(nullptr) {
-			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
+			m_component_this = std::shared_ptr<Component>(this, [](Component* p) 
+			{
+				p = nullptr; 
+			});
 		}
 		virtual ~Component() {
 			DestroyComponent();
@@ -229,16 +235,10 @@ namespace component
 			// 監視対象が存在しない場合、失敗
 			if (!_Ref.check())
 				return false;
-			if (_Ref.weak_ptr().lock() == m_component_this)
+			if (_Ref->m_component_this == m_component_this)
 				return false;
-
-			// 対象からデータを取得する
-			std::shared_ptr<Component> ptr = _Ref.weak_ptr().lock();
-			if (!_Ref->Aaa(_Ref))
-				return false;
-			m_component_child.emplace_back(ptr);
-			ptr->m_component_parent = m_component_this;
-			return true;
+			// 対象の所有権を移動します
+			return _Ref->move(m_component_this);
 		}
 
 		/**
@@ -287,7 +287,7 @@ namespace component
 			static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
 
 			// 破棄対象の検索
-			auto itr = std::find(m_component_child.begin(), m_component_child.end(), _Ref.weak_ptr().lock());
+			auto itr = std::find(m_component_child.begin(), m_component_child.end(), _Ref->m_component_this);
 			if (itr == m_component_child.end())
 				return false;
 			m_component_child.erase(itr);
@@ -434,7 +434,7 @@ namespace component
 				return IReference<_Ty>();
 			if (m_component_parent._dynamic_cast<_Ty>(nullptr))
 				return IReference<_Ty>();
-			return m_component_parent.weak_ptr().lock();
+			return m_component_parent->m_component_this;
 		}
 
 		/**
@@ -468,17 +468,20 @@ namespace component
 		@brief Japanese : 管理権限を放棄する
 		@return 放棄成功時に true が返ります
 		*/
-		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		bool Aaa(IReference <_Ty> & _Ref) {
-			static_assert(isExtended, "Aaa<> : _Ty is not inherited from Component Class");
-
+		bool move(IReference<Component> _Par) {
+			if (m_component_parent == nullptr)
+				return false;
 			if (m_component_parent == m_component_this)
 				return false;
-			auto itr = std::find(m_component_parent->m_component_child.begin(), m_component_parent->m_component_child.end(), _Ref.weak_ptr().lock());
+			auto itr = std::find(m_component_parent->m_component_child.begin(), m_component_parent->m_component_child.end(), m_component_this);
 			if (itr == m_component_parent->m_component_child.end())
 				return false;
+			// 参照数を増やします
+			auto ptr_copy = std::shared_ptr<Component>((*itr));
 			m_component_parent->m_component_child.erase(itr);
-			m_component_parent = nullptr;
+			// 移動先にデータを渡します
+			_Par->m_component_child.emplace_back(ptr_copy);
+			ptr_copy->m_component_parent = _Par->m_component_this;
 			return true;
 		}
 	private:
