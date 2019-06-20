@@ -74,6 +74,9 @@ namespace reference
 		void operator =(nullptr_t) {
 			m_weak.reset();
 		}
+		_OwnedClass* operator->() const noexcept {
+			return (_OwnedClass*)m_weak.lock().get();
+		}
 
 		/**
 		English
@@ -97,19 +100,6 @@ namespace reference
 		*/
 		long access_count() const noexcept {
 			return m_weak.use_count();
-		}
-
-		_OwnedClass* operator->() const noexcept {
-			return (_OwnedClass*)m_weak.lock().get();
-		}
-
-		template<class _Ty3>
-		bool _dynamic_cast(const _Ty3* _Ptr) {
-			return dynamic_cast<_Ty3*>(m_weak.lock().get()) == _Ptr;
-		}
-		template<class _Ty3>
-		bool _dynamic_cast(nullptr_t) {
-			return dynamic_cast<_Ty3*>(m_weak.lock().get()) == nullptr;
 		}
 	protected:
 		std::weak_ptr<_BaseClass> m_weak; // ŠÄŽ‹‹@”\
