@@ -492,8 +492,8 @@ namespace component
 	private:
 		/**
 		@brief English : Abandon administration authority
-		@brief Japanese : ŠÇ—Œ ŒÀ‚ğ•úŠü‚·‚é
-		@return •úŠü¬Œ÷‚É true ‚ª•Ô‚è‚Ü‚·
+		@brief Japanese : ŠÇ—Œ ŒÀ‚ğˆÚ“®‚·‚é
+		@return ˆÚ“®Œ÷‚É true ‚ª•Ô‚è‚Ü‚·
 		*/
 		bool move(IReference<Component> _Par) {
 			if (m_component_parent == nullptr)
