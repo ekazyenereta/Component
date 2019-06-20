@@ -225,6 +225,7 @@ namespace component
 		bool SetComponent(_Ty * _Ref) {
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
+			_Ref->m_component_hash_code = typeid(_Ty).hash_code();
 			return AddComponent(_Ref) != nullptr;
 		}
 
