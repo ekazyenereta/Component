@@ -422,7 +422,6 @@ namespace component
 		*/
 		const std::list<IReference<Component>> GetChild() const {
 			std::list<IReference<Component>> ref;
-
 			for (auto & itr1 : m_component_child)
 				for (auto & itr2 : itr1.second)
 					ref.push_back(itr2);
@@ -498,7 +497,7 @@ namespace component
 		bool move(IReference<Component> _Par) {
 			if (m_component_parent == nullptr)
 				return false;
-			if (m_component_parent == m_component_this)
+			if (_Par == nullptr)
 				return false;
 			
 			// ˆÚ“®‚µ‚½‚¢î•ñ‚ÌŒ^‚ğæ“¾
