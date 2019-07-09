@@ -53,26 +53,26 @@ namespace component
 
 		/**
 		English
-		@brief GameObject
+		@brief this component
 		@return Monitoring function reference class
 		Japanese
-		@brief GameObject
+		@brief this component
 		@return 監視機能の参照クラス
 		*/
-		IReference <Component> GameObject() {
+		IReference <Component> ThisComponent() {
 			return m_component_this;
 		}
 
 		/**
 		English
-		@brief GameObject
+		@brief this component
 		@return Monitoring function reference class
 		Japanese
-		@brief GameObject
+		@brief this component
 		@return 監視機能の参照クラス
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IReference <_Ty> GameObject() {
+		IReference <_Ty> ThisComponent() {
 			return m_component_this;
 		}
 
@@ -420,7 +420,7 @@ namespace component
 		@brief 子要素を取得する
 		@return 子要素
 		*/
-		const std::list<IReference<Component>> GetChild() const {
+		const std::list<IReference<Component>> GetComponentChild() const {
 			std::list<IReference<Component>> ref;
 			for (auto & itr1 : m_component_child)
 				for (auto & itr2 : itr1.second)
@@ -437,8 +437,8 @@ namespace component
 		@return 子要素
 		*/
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		const std::list<IReference<_Ty>> GetChild() const {
-			static_assert(isExtended, "GetChild<> : _Ty is not inherited from Component Class");
+		const std::list<IReference<_Ty>> GetComponentChild() const {
+			static_assert(isExtended, "GetComponentChild<> : _Ty is not inherited from Component Class");
 
 			std::list<IReference<_Ty>> ref;
 
@@ -461,7 +461,7 @@ namespace component
 		@brief 親要素を取得する
 		@return 親要素
 		*/
-		IReference <Component> GetParent() {
+		IReference <Component> GetComponentParent() {
 			if (m_component_parent == nullptr)
 				return IReference<Component>();
 			return m_component_parent;
@@ -476,8 +476,8 @@ namespace component
 		@return 親要素
 		*/
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		IReference <_Ty> GetParent() {
-			static_assert(isExtended, "GetParent<> : _Ty is not inherited from Component Class");
+		IReference <_Ty> GetComponentParent() {
+			static_assert(isExtended, "GetComponentParent<> : _Ty is not inherited from Component Class");
 
 			if (m_component_parent == nullptr)
 				return IReference<_Ty>();
@@ -535,8 +535,8 @@ namespace component
 		static_assert(isExtended, "Destroy <> : _Ty is not inherited from Component Class");
 		if (!_Ref.check())
 			return;
-		if (_Ref->GetParent() == nullptr)
+		if (_Ref->GetComponentParent() == nullptr)
 			return;
-		_Ref->GetParent()->DestroyComponent(_Ref);
+		_Ref->GetComponentParent()->DestroyComponent(_Ref);
 	}
 }

@@ -171,8 +171,8 @@ int main()
 
 	desObj = text3->AddComponent(new text::Text("desObj"));
 	// 親を呼び出して、親オブジェクトから破棄の処理を実行することができます
-	if (desObj->GetParent() != nullptr)
-		desObj->GetParent()->DestroyComponent(desObj);
+	if (desObj->GetComponentParent() != nullptr)
+		desObj->GetComponentParent()->DestroyComponent(desObj);
 
 	desObj = text3->AddComponent(new text::Text("desObj"));
 	// メンバ変数ではない 破棄専用関数に入れるだけで破棄が可能です
@@ -221,12 +221,12 @@ int main()
 	auto otherObj = text3->AddComponent(new text::Text("other"));
 
 	// 自身を取得します
-	auto otherObj1 = otherObj->GameObject();
-	auto otherObj2 = otherObj->GameObject<text::Text>();
+	auto otherObj1 = otherObj->ThisComponent();
+	auto otherObj2 = otherObj->ThisComponent<text::Text>();
 
 	// 親を取得します
-	auto otherParent1 = otherObj->GetParent();
-	auto otherParent2 = otherObj->GetParent<text::Text>();
+	auto otherParent1 = otherObj->GetComponentParent();
+	auto otherParent2 = otherObj->GetComponentParent<text::Text>();
 
 	// 名前の変更,取得
 	otherObj->SetComponentName("Other");
@@ -236,7 +236,7 @@ int main()
 	auto otherObjNumChild = otherObj->GetNumChild();
 
 	// 子リストの取得
-	auto otherObjChildList = otherObj->GetChild();
+	auto otherObjChildList = otherObj->GetComponentChild();
 
 	//==========================================================================
 	//
@@ -263,7 +263,7 @@ int main()
 	}
 
 	// GameObject Parent null
-	if(gameObject->GetParent() == nullptr)
+	if(gameObject->GetComponentParent() == nullptr)
 		std::cout << "nullptr" << std::endl;
 
 	// system
