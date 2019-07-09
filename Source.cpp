@@ -262,7 +262,6 @@ int main()
 		std::cout << text5->GetComponentName() << str_element << text5->GetNumChild() << std::endl;
 	}
 
-
 	// GameObject Parent null
 	if (gameObject->GetComponentParent() == nullptr)
 		std::cout << "nullptr" << std::endl;
