@@ -42,17 +42,6 @@ namespace component
 			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
 			m_component_thisptrs[m_component_hash_code] = m_component_this;
 		}
-		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-		Component(_Ty * _this) : m_component_hash_code(typeid(Component).hash_code()) {
-			static_assert(isExtended, "Component : _Ty is not inherited from Component Class");
-			size_t size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
-			std::unique_ptr<char[]> buf(new char[size]);
-			snprintf(buf.get(), size, "%p", this);
-			m_component_name = std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
-			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
-			m_component_thisptrs[m_component_hash_code] = m_component_this;
-			m_component_thisptrs[typeid(_Ty).hash_code()] = std::shared_ptr<_Ty>(_this, [](_Ty* p) {p = nullptr; });
-		}
 		Component(const std::string & _Name) : m_component_name(_Name),
 			m_component_hash_code(typeid(Component).hash_code()) {
 			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
@@ -117,7 +106,6 @@ namespace component
 			ptr->m_component_hash_code = typeid(_Ty).hash_code();
 			m_component_child[ptr->m_component_hash_code].emplace_back(ptr);
 			ptr->m_component_parent = m_component_this;
-			ptr->m_component_parents.clear();
 			return ptr;
 		}
 
