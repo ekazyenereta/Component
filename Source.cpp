@@ -19,7 +19,7 @@ namespace text
 	{
 	public:
 		Text() {}
-		Text(const std::string & text) : m_text(text), Component(text) {}
+		Text(const std::string & text) : m_text(text), Component(text, this) {}
 		~Text() {}
 		void print() {
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
