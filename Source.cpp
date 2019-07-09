@@ -21,7 +21,6 @@ namespace text
 		Text() {}
 		Text(const std::string & text) : m_text(text), Component(text, this) {}
 		~Text() {}
-		using Component::Component;
 		void print() {
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
 		}
@@ -38,28 +37,28 @@ namespace text
 	{
 	public:
 		Text1() :Text("text1") {}
-		Text1(const std::string & text) :Text(text, this) {}
+		Text1(const std::string & text) :Text(text) {}
 	};
 
 	class Text2 : public Text
 	{
 	public:
 		Text2() :Text("text2") {}
-		Text2(const std::string & text) :Text(text, this) {}
+		Text2(const std::string & text) :Text(text) {}
 	};
 
 	class Text3 : public Text
 	{
 	public:
 		Text3() :Text("text3") {}
-		Text3(const std::string & text) :Text(text, this) {}
+		Text3(const std::string & text) :Text(text) {}
 	};
 
 	class Text4 : public component::Component
 	{
 	public:
 		Text4() {}
-		Text4(const std::string & text) : m_text(text), Component(text, this) {}
+		Text4(const std::string & text) : m_text(text), Component(text) {}
 		~Text4() {}
 		void print() {
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
