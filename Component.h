@@ -49,6 +49,7 @@ namespace component
 			DestroyComponent();
 			m_component_child.clear();
 			m_component_name.clear();
+			m_component_thisptrs.clear();
 		}
 
 		/**
@@ -73,7 +74,13 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		IReference <_Ty> ThisComponent() {
-			return m_component_this;
+			auto itr = m_component_thisptrs.find(typeid(_Ty).hash_code());
+			if (itr == m_component_thisptrs.end())
+				if (dynamic_cast<_Ty*>(this) == nullptr)
+					return m_component_thisptrs[typeid(_Ty).hash_code()];
+				else
+					return m_component_thisptrs[typeid(_Ty).hash_code()] = m_component_this;
+			return itr->second;
 		}
 
 		/**
@@ -462,8 +469,6 @@ namespace component
 		@return 親要素
 		*/
 		IReference <Component> GetComponentParent() {
-			if (m_component_parent == nullptr)
-				return IReference<Component>();
 			return m_component_parent;
 		}
 
@@ -481,11 +486,7 @@ namespace component
 
 			if (m_component_parent == nullptr)
 				return IReference<_Ty>();
-			if (typeid(Component) == typeid(_Ty))
-				return m_component_parent->m_component_this;
-			if (m_component_parent->m_component_hash_code != typeid(_Ty).hash_code())
-				return IReference<_Ty>();
-			return m_component_parent->m_component_this;
+			return m_component_parent->ThisComponent<_Ty>();
 		}
 
 	private:
@@ -521,6 +522,7 @@ namespace component
 		}
 	private:
 		std::unordered_map<size_t, std::list<std::shared_ptr<Component>>> m_component_child; // コンポーネントの管理
+		std::unordered_map<size_t, std::shared_ptr<Component>> m_component_thisptrs; // 自身
 		std::shared_ptr<Component> m_component_this; // 自身
 		IReference<Component> m_component_parent; // 親コンポーネント
 		std::string m_component_name; // コンポーネント名

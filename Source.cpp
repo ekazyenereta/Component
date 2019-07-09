@@ -263,7 +263,7 @@ int main()
 	}
 
 	// GameObject Parent null
-	if(gameObject->GetComponentParent() == nullptr)
+	if (gameObject->GetComponentParent() == nullptr)
 		std::cout << "nullptr" << std::endl;
 
 	// system
