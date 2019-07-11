@@ -36,7 +36,7 @@ namespace component
 		Component &operator=(Component&&) = delete;
 	public:
 		Component() : m_component_parent(nullptr), m_component_hash_code(typeid(Component).hash_code()) {
-			int size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
+			size_t size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
 			std::unique_ptr<char[]> buf(new char[size]);
 			snprintf(buf.get(), size, "%p", this);
 			m_component_name = std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
