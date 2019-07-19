@@ -197,7 +197,7 @@ namespace component
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
 			_Ref->m_component_hash_code = typeid(_Ty).hash_code();
-			return !AddComponent(_Ref).expired();
+			return AddComponent(_Ref).check();
 		}
 
 		/**
@@ -215,12 +215,12 @@ namespace component
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
 			// ŠÄŽ‹‘ÎÛ‚ª‘¶Ý‚µ‚È‚¢ê‡AŽ¸”s
-			if (_Ref.expired())
+			if (!_Ref.check())
 				return false;
-			if (_Ref.lock() == m_component_this)
+			if (_Ref == m_component_this)
 				return false;
 			// ‘ÎÛ‚ÌŠ—LŒ ‚ðˆÚ“®‚µ‚Ü‚·
-			return _Ref.lock()->move(m_component_this);
+			return _Ref->move(m_component_this);
 		}
 
 		/**
@@ -273,7 +273,7 @@ namespace component
 				return false;
 
 			// ”jŠü‘ÎÛ‚ÌŒŸõ
-			auto itr2 = std::find(itr1->second.begin(), itr1->second.end(), _Ref.lock()->m_component_this);
+			auto itr2 = std::find(itr1->second.begin(), itr1->second.end(), _Ref->m_component_this);
 			if (itr2 == itr1->second.end())
 				return false;
 
@@ -450,7 +450,7 @@ namespace component
 
 			if (m_component_parent.expired())
 				return IReference<_Ty>();
-			return m_component_parent.lock()->ThisComponent<_Ty>();
+			return m_component_parent->ThisComponent<_Ty>();
 		}
 
 	private:
@@ -460,14 +460,14 @@ namespace component
 		@return ˆÚ“®Œ÷Žž‚É true ‚ª•Ô‚è‚Ü‚·
 		*/
 		bool move(IReference<Component> _Par) {
-			if (m_component_parent.expired())
+			if (!m_component_parent.check())
 				return false;
-			if (_Par.expired())
+			if (!_Par.check())
 				return false;
 			
 			// ˆÚ“®‚µ‚½‚¢î•ñ‚ÌŒ^‚ðŽæ“¾
-			auto itr1 = m_component_parent.lock()->m_component_child.find(m_component_hash_code);
-			if (itr1 == m_component_parent.lock()->m_component_child.end())
+			auto itr1 = m_component_parent->m_component_child.find(m_component_hash_code);
+			if (itr1 == m_component_parent->m_component_child.end())
 				return false;
 
 			// ˆÚ“®‘ÎÛ‚ðŽæ“¾
@@ -480,8 +480,8 @@ namespace component
 			itr1->second.erase(itr2);
 
 			// ˆÚ“®æ‚Éƒf[ƒ^‚ð“n‚µ‚Ü‚·
-			_Par.lock()->m_component_child[m_component_hash_code].emplace_back(ptr_copy);
-			ptr_copy->m_component_parent = _Par.lock()->m_component_this;
+			_Par->m_component_child[m_component_hash_code].emplace_back(ptr_copy);
+			ptr_copy->m_component_parent = _Par->m_component_this;
 			return true;
 		}
 	private:
@@ -497,10 +497,10 @@ namespace component
 	void Destroy(IReference<_Ty> & _Ref)
 	{
 		static_assert(isExtended, "Destroy <> : _Ty is not inherited from Component Class");
-		if (_Ref.expired())
+		if (!_Ref.check())
 			return;
-		if (_Ref.lock()->GetComponentParent().expired())
+		if (!_Ref->GetComponentParent().check())
 			return;
-		_Ref.lock()->GetComponentParent().lock()->DestroyComponent(_Ref);
+		_Ref->GetComponentParent()->DestroyComponent(_Ref);
 	}
 }
