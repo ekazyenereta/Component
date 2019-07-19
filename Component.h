@@ -217,7 +217,7 @@ namespace component
 			// ŠÄŽ‹‘ÎÛ‚ª‘¶Ý‚µ‚È‚¢ê‡AŽ¸”s
 			if (!_Ref.check())
 				return false;
-			if (_Ref == m_component_this)
+			if (_Ref->m_component_this == m_component_this)
 				return false;
 			// ‘ÎÛ‚ÌŠ—LŒ ‚ðˆÚ“®‚µ‚Ü‚·
 			return _Ref->move(m_component_this);
@@ -279,7 +279,7 @@ namespace component
 
 			// ”jŠü
 			itr1->second.erase(itr2);
-			_Ref.reset();
+			_Ref.clear();
 			return true;
 		}
 
@@ -448,7 +448,7 @@ namespace component
 		IReference <_Ty> GetComponentParent() {
 			static_assert(isExtended, "GetComponentParent<> : _Ty is not inherited from Component Class");
 
-			if (m_component_parent.expired())
+			if (!m_component_parent.check())
 				return IReference<_Ty>();
 			return m_component_parent->ThisComponent<_Ty>();
 		}

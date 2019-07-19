@@ -130,8 +130,10 @@ int main()
 	auto text3 = gameObject->AddComponent(new text::Text3);
 
 	// テキスト3に追加します
-	auto text4 = text3.lock()->AddComponent(new text::Text("text4"));
-	auto text5 = text3.lock()->AddComponent(new text::Text("text5"));
+	auto text4 = text3->AddComponent(new text::Text("text4"));
+	auto text5 = text3->AddComponent(new text::Text("text5"));
+	auto text6 = text3->AddComponent(new text::Text("text6"));
+	auto text7 = text3->AddComponent(new text::Text("text7"));
 
 	//==========================================================================
 	//
@@ -143,91 +145,126 @@ int main()
 	auto getText1 = gameObject->GetComponent<text::Text1>();
 
 	// text3 には text6 という名前のオブジェクトがないので nullptr が返ります
-	auto getText2 = text3.lock()->GetComponent("text6");
+	auto getText2 = text3->GetComponent("text6");
 
 	// text3 には Text という機能に text5 をいう名前の付いたオブジェクトがあるので取得できます
-	auto getText3 = text3.lock()->GetComponent<text::Text>("text5");
+	auto getText3 = text3->GetComponent<text::Text>("text5");
 
 	//==========================================================================
 	//
 	// オブジェクトの入れ替えをやってみよう
 	//
 	//==========================================================================
-	auto tradeObj1 = text1.lock()->AddComponent(new text::Text("trade1"));
-	auto tradeObj2 = text2.lock()->AddComponent(new text::Text("trade2"));
+	auto tradeObj1 = text1->AddComponent(new text::Text("trade1"));
+	auto tradeObj2 = text2->AddComponent(new text::Text("trade2"));
 
 	// trade2 を trade1 の子供にします
-	tradeObj1.lock()->SetComponent(tradeObj2);
+	tradeObj1->SetComponent(tradeObj2);
 
 	// trade1 と trade2 を text3 の子にします
-	text3.lock()->SetComponent(tradeObj1);
-	text3.lock()->SetComponent(tradeObj2);
+	text3->SetComponent(tradeObj1);
+	text3->SetComponent(tradeObj2);
 
 	// AddComponent と似た追加の仕方ができますが、戻り値はboolです
-	text3.lock()->SetComponent(new text::Text("trade3"));
+	text3->SetComponent(new text::Text("trade3"));
 
 	//==========================================================================
 	//
 	// オブジェクトを破棄します
 	//
 	//==========================================================================
-	auto desObj = text3.lock()->AddComponent(new text::Text("desObj"));
-	desObj.lock()->AddComponent(new text::Text1);
-	desObj.lock()->AddComponent(new text::Text2);
-	desObj.lock()->AddComponent(new text::Text3);
+	auto desObj = text3->AddComponent(new text::Text("desObj"));
+	desObj->AddComponent(new text::Text1);
+	desObj->AddComponent(new text::Text2);
+	desObj->AddComponent(new text::Text3);
 
 	// 子を全て破棄します
-	desObj.lock()->DestroyComponent();
+	desObj->DestroyComponent();
 
-	desObj.lock()->AddComponent(new text::Text("obj1"));
-	desObj.lock()->AddComponent(new text::Text("obj2"));
+	desObj->AddComponent(new text::Text("obj1"));
+	desObj->AddComponent(new text::Text("obj2"));
 
 	// 子の名前を指定して破棄します
-	desObj.lock()->DestroyComponent("obj1");
+	desObj->DestroyComponent("obj1");
 
 	// 機能と子の名前を指定して破棄します
-	desObj.lock()->DestroyComponent<text::Text>("obj2");
+	desObj->DestroyComponent<text::Text>("obj2");
 
 	// 親が違うので破棄はできません
-	if (!text1.lock()->DestroyComponent(desObj))
+	if (!text1->DestroyComponent(desObj))
 		// 自分で自分は消せません
-		if (!desObj.lock()->DestroyComponent(desObj))
+		if (!desObj->DestroyComponent(desObj))
 			// 親なら消すことができます
-			text3.lock()->DestroyComponent(desObj);
+			text3->DestroyComponent(desObj);
 
-	desObj = text3.lock()->AddComponent(new text::Text("desObj"));
+	desObj = text3->AddComponent(new text::Text("desObj"));
 	// 親を呼び出して、親オブジェクトから破棄の処理を実行することができます
-	if (!desObj.lock()->GetComponentParent().expired())
-		desObj.lock()->GetComponentParent().lock()->DestroyComponent(desObj);
+	if (desObj->GetComponentParent() != nullptr)
+		desObj->GetComponentParent()->DestroyComponent(desObj);
 
-	desObj = text3.lock()->AddComponent(new text::Text("desObj"));
+	desObj = text3->AddComponent(new text::Text("desObj"));
 	// メンバ変数ではない 破棄専用関数に入れるだけで破棄が可能です
 	component::Destroy(desObj);
+
+	//==========================================================================
+	//
+	// 比較演算子
+	//
+	//==========================================================================
+	auto com1 = text3->AddComponent(new text::Text1("Comparison operator 1"));
+	auto com2 = text3->AddComponent(new text::Text1("Comparison operator 2"));
+	auto com3 = com1;
+
+	// 同じ
+	if (com1.check() == com3.check())
+		if (com1 == com3)
+			com1 = com3;
+
+	// 同じではない
+	if (com1.check() == com2.check())
+		if (com1 != com2)
+			com1 = com2;
+
+	// 管理しているデータがある
+	if (com1)
+		com1 = nullptr;
+
+	// 管理しているデータがない
+	if (!com1)
+		com1 = com3;
+
+	// 管理しているデータがある
+	if (com1 != nullptr)
+		com1 = nullptr;
+
+	// 管理しているデータがない
+	if (com1 == nullptr)
+		com1 = com3;
 
 	//==========================================================================
 	//
 	// その他
 	//
 	//==========================================================================
-	auto otherObj = text3.lock()->AddComponent(new text::Text("other"));
+	auto otherObj = text3->AddComponent(new text::Text("other"));
 
 	// 自身を取得します
-	auto otherObj1 = otherObj.lock()->ThisComponent();
-	auto otherObj2 = otherObj.lock()->ThisComponent<text::Text>();
+	auto otherObj1 = otherObj->ThisComponent();
+	auto otherObj2 = otherObj->ThisComponent<text::Text>();
 
 	// 親を取得します
-	auto otherParent1 = otherObj.lock()->GetComponentParent();
-	auto otherParent2 = otherObj.lock()->GetComponentParent<text::Text>();
+	auto otherParent1 = otherObj->GetComponentParent();
+	auto otherParent2 = otherObj->GetComponentParent<text::Text>();
 
 	// 名前の変更,取得
-	otherObj.lock()->SetComponentName("Other");
-	auto otherObjName = otherObj.lock()->GetComponentName();
+	otherObj->SetComponentName("Other");
+	auto otherObjName = otherObj->GetComponentName();
 
 	// 子の数の取得
-	auto otherObjNumChild = otherObj.lock()->GetNumChild();
+	auto otherObjNumChild = otherObj->GetNumChild();
 
 	// 子リストの取得
-	auto otherObjChildList = otherObj.lock()->GetComponentChild();
+	auto otherObjChildList = otherObj->GetComponentChild();
 
 	//==========================================================================
 	//
@@ -236,25 +273,25 @@ int main()
 	//==========================================================================
 
 	// test component function
-	text1.lock()->print();
-	text2.lock()->print();
-	text3.lock()->print();
-	text4.lock()->print();
-	text5.lock()->print();
+	text1->print();
+	text2->print();
+	text3->print();
+	text4->print();
+	text5->print();
 
 	// test component function
-	if (!text5.expired())
+	if (text5)
 	{
 		std::cout << gameObject->GetComponentName() << str_element << gameObject->GetNumChild() << std::endl;
-		std::cout << text1.lock()->GetComponentName() << str_element << text1.lock()->GetNumChild() << std::endl;
-		std::cout << text2.lock()->GetComponentName() << str_element << text2.lock()->GetNumChild() << std::endl;
-		std::cout << text3.lock()->GetComponentName() << str_element << text3.lock()->GetNumChild() << std::endl;
-		std::cout << text4.lock()->GetComponentName() << str_element << text4.lock()->GetNumChild() << std::endl;
-		std::cout << text5.lock()->GetComponentName() << str_element << text5.lock()->GetNumChild() << std::endl;
+		std::cout << text1->GetComponentName() << str_element << text1->GetNumChild() << std::endl;
+		std::cout << text2->GetComponentName() << str_element << text2->GetNumChild() << std::endl;
+		std::cout << text3->GetComponentName() << str_element << text3->GetNumChild() << std::endl;
+		std::cout << text4->GetComponentName() << str_element << text4->GetNumChild() << std::endl;
+		std::cout << text5->GetComponentName() << str_element << text5->GetNumChild() << std::endl;
 	}
 
 	// GameObject Parent null
-	if (gameObject->GetComponentParent().expired())
+	if (gameObject->GetComponentParent() == nullptr)
 		std::cout << "nullptr" << std::endl;
 
 	std::cout << std::endl;
