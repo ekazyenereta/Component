@@ -13,6 +13,7 @@
 
 #include "Component.h"
 
+// í èÌåpè≥
 namespace text
 {
 	class Text : public component::Component
@@ -78,6 +79,8 @@ namespace text
 	using ReferenceText3 = component::IReference<Text3>;
 	using ReferenceText4 = component::IReference<Text4>;
 }
+
+// âºëzåpè≥
 namespace virtual_inheritance
 {
 	class base : public component::Component {
@@ -297,12 +300,11 @@ int main()
 	std::cout << std::endl;
 	std::cout << std::endl;
 
+	// âºëzåpè≥ÇÇµÇΩã@î\ÇÃìoò^
 	gameObject->AddComponent(new virtual_inheritance::more_derived);
 	gameObject->AddComponent(new virtual_inheritance::derived_A);
 	gameObject->AddComponent(new virtual_inheritance::derived_B);
 	gameObject->AddComponent(new virtual_inheritance::base);
-
-	//static_cast<text::Text1*>(new text::Text1)
 
 	// system
 	return std::system("PAUSE");
