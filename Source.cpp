@@ -26,7 +26,7 @@ namespace text
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
 		}
 		template <typename _Ty>
-		void copy(component::IReference<_Ty> p) {
+		void copy(component::Reference<_Ty> p) {
 			m_text = p->m_text;
 			m_text = p->m_text;
 		}
@@ -65,7 +65,7 @@ namespace text
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
 		}
 		template <typename _Ty>
-		void copy(component::IReference<_Ty> p) {
+		void copy(component::Reference<_Ty> p) {
 			m_text = p->m_text;
 			m_text = p->m_text;
 		}
@@ -73,11 +73,11 @@ namespace text
 		std::string m_text;
 	};
 
-	using ReferenceText = component::IReference<Text>;
-	using ReferenceText1 = component::IReference<Text1>;
-	using ReferenceText2 = component::IReference<Text2>;
-	using ReferenceText3 = component::IReference<Text3>;
-	using ReferenceText4 = component::IReference<Text4>;
+	using ReferenceText = component::Reference<Text>;
+	using ReferenceText1 = component::Reference<Text1>;
+	using ReferenceText2 = component::Reference<Text2>;
+	using ReferenceText3 = component::Reference<Text3>;
+	using ReferenceText4 = component::Reference<Text4>;
 }
 
 // âºëzåpè≥

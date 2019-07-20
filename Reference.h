@@ -11,13 +11,24 @@
 
 namespace reference
 {
+	//==========================================================================
+	//
+	// class  : weak_ptr_custom 
+	//
+	// English
+	// Content: This function is an extension of weak_ptr.
+	//
+	// Japanese
+	// Content: weak_ptr を拡張したクラスです。
+	//
+	//==========================================================================
 	template <typename _Ty>
-	class IReference :
+	class weak_ptr_custom :
 		private std::weak_ptr<_Ty>
 	{
 	public:
-		IReference() {}
-		~IReference() {}
+		weak_ptr_custom() {}
+		~weak_ptr_custom() {}
 	private:
 		// weak_ptr の機能を private 展開します
 		using std::weak_ptr<_Ty>::expired;
@@ -58,14 +69,14 @@ namespace reference
 		bool operator==(nullptr_t) const noexcept {
 			return expired();
 		}
-		bool operator==(const IReference& _Right) const noexcept {
+		bool operator==(const weak_ptr_custom& _Right) const noexcept {
 			if (expired())
 				return false;
 			if (_Right.expired())
 				return false;
 			return lock() == _Right.lock();
 		}
-		bool operator!=(const IReference& _Right) const noexcept {
+		bool operator!=(const weak_ptr_custom& _Right) const noexcept {
 			if (expired())
 				return false;
 			if (_Right.expired())
@@ -76,7 +87,7 @@ namespace reference
 
 	//==========================================================================
 	//
-	// class  : IReferenceWrapper 
+	// class  : TemplateReference 
 	//
 	// English
 	// Content: Monitoring function reference class
@@ -86,16 +97,16 @@ namespace reference
 	//
 	//==========================================================================
 	template <typename _Derived, typename _Base, bool isExtended = std::is_base_of<_Base, _Derived>::value>
-	class IReferenceWrapper
+	class TemplateReference
 	{
-		static_assert(isExtended, "IReferenceWrapper <> : _Ty is not inherited from BaseClass Class");
+		static_assert(isExtended, "TemplateReference <> : _Ty is not inherited from BaseClass Class");
 	public:
 		using Owned = _Derived;
 	public:
-		IReferenceWrapper() {}
-		IReferenceWrapper(const std::shared_ptr<_Base>& _This) : m_weak(_This) {}
-		IReferenceWrapper(const IReferenceWrapper& _Right) : m_weak(_Right.m_weak) {}
-		~IReferenceWrapper() {}
+		TemplateReference() {}
+		TemplateReference(const std::shared_ptr<_Base>& _This) : m_weak(_This) {}
+		TemplateReference(const TemplateReference& _Right) : m_weak(_Right.m_weak) {}
+		~TemplateReference() {}
 
 		operator bool() const noexcept {
 			return m_weak.check();
@@ -106,14 +117,14 @@ namespace reference
 		bool operator==(nullptr_t) const noexcept {
 			return m_weak == nullptr;
 		}
-		bool operator==(const IReference<_Base>& _Right) const noexcept {
+		bool operator==(const weak_ptr_custom<_Base>& _Right) const noexcept {
 			if (!m_weak.check())
 				return false;
 			if (!_Right.check())
 				return false;
 			return m_weak == _Right;
 		}
-		bool operator!=(const IReference<_Base>& _Right) const noexcept {
+		bool operator!=(const weak_ptr_custom<_Base>& _Right) const noexcept {
 			if (!m_weak.check())
 				return false;
 			if (!m_weak.check())
@@ -121,7 +132,7 @@ namespace reference
 			return m_weak != _Right;
 		}
 		template<class _Ty>
-		bool operator!=(IReferenceWrapper <_Ty, _Base>& _Right) const noexcept {
+		bool operator!=(TemplateReference <_Ty, _Base>& _Right) const noexcept {
 			if (!m_weak.check())
 				return false;
 			if (!m_weak.check())
@@ -129,7 +140,7 @@ namespace reference
 			return m_weak != _Right.m_weak;
 		}
 		template<class _Ty>
-		bool operator==(IReferenceWrapper <_Ty, _Base>& _Right) const noexcept {
+		bool operator==(TemplateReference <_Ty, _Base>& _Right) const noexcept {
 			if (!m_weak.check())
 				return false;
 			if (!m_weak.check())
@@ -173,6 +184,6 @@ namespace reference
 			m_weak.clear();
 		}
 	protected:
-		IReference<_Base> m_weak; // 監視機能
+		weak_ptr_custom<_Base> m_weak; // 監視機能
 	};
 }
