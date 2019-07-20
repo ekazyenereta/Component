@@ -17,6 +17,8 @@
 
 namespace component
 {
+	using namespace reference;
+
 	//==========================================================================
 	//
 	// class  : Component
@@ -25,9 +27,6 @@ namespace component
 	//==========================================================================
 	class Component
 	{
-	public:
-		template <typename _Ty>
-		using IReference = reference::TemplateReference<_Ty, Component>;
 	private:
 		// Copy prohibited (C++11)
 		Component(const Component&) = delete;
@@ -35,14 +34,14 @@ namespace component
 		Component& operator=(const Component&) = delete;
 		Component& operator=(Component&&) = delete;
 	public:
-		Component() : m_component_parent(nullptr), m_component_hash_code(typeid(Component).hash_code()) {
-			size_t size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
+		Component() : m_component_hash_code(typeid(Component).hash_code()) {
+			int size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
 			std::unique_ptr<char[]> buf(new char[size]);
 			snprintf(buf.get(), size, "%p", this);
 			m_component_name = std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
 		}
-		Component(const std::string& _Name) :m_component_name(_Name), m_component_parent(nullptr), m_component_hash_code(typeid(Component).hash_code()) {
+		Component(const std::string& _Name) :m_component_name(_Name), m_component_hash_code(typeid(Component).hash_code()) {
 			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
 		}
 		virtual ~Component() {
@@ -74,13 +73,18 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		IReference <_Ty> ThisComponent() {
-			auto itr = m_component_thisptrs.find(typeid(_Ty).hash_code());
-			if (itr == m_component_thisptrs.end())
-				if (dynamic_cast<_Ty*>(this) == nullptr)
-					return m_component_thisptrs[typeid(_Ty).hash_code()];
-				else
-					return m_component_thisptrs[typeid(_Ty).hash_code()] = m_component_this;
-			return itr->second;
+			auto itr1 = m_component_thisptrs.find(typeid(_Ty).hash_code());
+			if (itr1 == m_component_thisptrs.end()) {
+				if (dynamic_cast<_Ty*>(this) == nullptr) {
+					m_component_thisptrs[typeid(_Ty).hash_code()];
+					return IReference <_Ty>();
+				}
+				else {
+					auto itr2 = m_component_thisptrs[typeid(_Ty).hash_code()] = m_component_this;
+					return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
+				}
+			}
+			return std::shared_ptr<_Ty>(itr1->second, static_cast<_Ty*>((void*)itr1->second.get()));
 		}
 
 		/**
@@ -97,7 +101,7 @@ namespace component
 		IReference <_Ty> AddComponent(_Ty* _Ref) {
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
-			std::shared_ptr<Component> ptr(_Ref);
+			std::shared_ptr<_Ty> ptr(_Ref);
 			ptr->m_component_hash_code = typeid(_Ty).hash_code();
 			m_component_child[ptr->m_component_hash_code].emplace_back(ptr);
 			ptr->m_component_parent = m_component_this;
@@ -117,16 +121,17 @@ namespace component
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 
 			// 取得対象の型があるかのチェック
-			auto itr = m_component_child.find(typeid(_Ty).hash_code());
-			if (itr == m_component_child.end())
+			auto itr1 = m_component_child.find(typeid(_Ty).hash_code());
+			if (itr1 == m_component_child.end())
 				return IReference <_Ty>();
 
 			// 専用の管理枠があったが、実態が無い場合終了
-			if ((int)itr->second.size() == 0)
+			if ((int)itr1->second.size() == 0)
 				return IReference <_Ty>();
 
 			// 一番最後に登録されたコンポーネントを取得
-			return (*(--itr->second.end()));
+			auto itr2 = (*--itr1->second.end());
+			return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
 		}
 
 		/**
@@ -156,7 +161,7 @@ namespace component
 					continue;
 
 				// 対象コンポーネントの取得
-				return itr2;
+				return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
 			}
 			return IReference <_Ty>();
 		}
@@ -195,7 +200,7 @@ namespace component
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
 
 			_Ref->m_component_hash_code = typeid(_Ty).hash_code();
-			return AddComponent(_Ref) != nullptr;
+			return AddComponent(_Ref).check();
 		}
 
 		/**
@@ -277,7 +282,7 @@ namespace component
 
 			// 破棄
 			itr1->second.erase(itr2);
-			_Ref = nullptr;
+			_Ref.clear();
 			return true;
 		}
 
@@ -446,7 +451,7 @@ namespace component
 		IReference <_Ty> GetComponentParent() {
 			static_assert(isExtended, "GetComponentParent<> : _Ty is not inherited from Component Class");
 
-			if (m_component_parent == nullptr)
+			if (!m_component_parent.check())
 				return IReference<_Ty>();
 			return m_component_parent->ThisComponent<_Ty>();
 		}
@@ -458,9 +463,9 @@ namespace component
 		@return 移動功時に true が返ります
 		*/
 		bool move(IReference<Component> _Par) {
-			if (m_component_parent == nullptr)
+			if (!m_component_parent.check())
 				return false;
-			if (_Par == nullptr)
+			if (!_Par.check())
 				return false;
 
 			// 移動したい情報の型を取得
@@ -491,19 +496,14 @@ namespace component
 		size_t m_component_hash_code; // コンポーネントのハッシュ
 	};
 
-	template <typename _Ty>
-	using Reference = Component::IReference<_Ty>;
 	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	void Destroy(Reference<_Ty>& _Ref)
+	void Destroy(IReference<_Ty>& _Ref)
 	{
 		static_assert(isExtended, "Destroy <> : _Ty is not inherited from Component Class");
 		if (!_Ref.check())
 			return;
-		if (_Ref->GetComponentParent() == nullptr)
+		if (!_Ref->GetComponentParent().check())
 			return;
 		_Ref->GetComponentParent()->DestroyComponent(_Ref);
 	}
-
-	template <typename _Ty>
-	using  Reference = reference::TemplateReference<_Ty, Component>;
 }

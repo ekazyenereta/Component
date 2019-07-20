@@ -26,7 +26,7 @@ namespace text
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
 		}
 		template <typename _Ty>
-		void copy(component::Reference<_Ty> p) {
+		void copy(reference::IReference<_Ty> p) {
 			m_text = p->m_text;
 			m_text = p->m_text;
 		}
@@ -65,7 +65,7 @@ namespace text
 			std::cout << GetComponentName() << " [text] " << m_text << std::endl;
 		}
 		template <typename _Ty>
-		void copy(component::Reference<_Ty> p) {
+		void copy(reference::IReference<_Ty> p) {
 			m_text = p->m_text;
 			m_text = p->m_text;
 		}
@@ -73,11 +73,11 @@ namespace text
 		std::string m_text;
 	};
 
-	using ReferenceText = component::Reference<Text>;
-	using ReferenceText1 = component::Reference<Text1>;
-	using ReferenceText2 = component::Reference<Text2>;
-	using ReferenceText3 = component::Reference<Text3>;
-	using ReferenceText4 = component::Reference<Text4>;
+	using ReferenceText = reference::IReference<Text>;
+	using ReferenceText1 = reference::IReference<Text1>;
+	using ReferenceText2 = reference::IReference<Text2>;
+	using ReferenceText3 = reference::IReference<Text3>;
+	using ReferenceText4 = reference::IReference<Text4>;
 }
 
 // âºëzåpè≥
@@ -113,6 +113,83 @@ namespace virtual_inheritance
 	template<> void func<derived_A>(const derived_A&) { std::cout << "func<derived_A>()" << std::endl; }
 	template<> void func<derived_B>(const derived_B&) { std::cout << "func<derived_B>()" << std::endl; }
 }
+
+class GameObject :
+	virtual public component::Component
+{
+public:
+	GameObject() {
+		std::cout << "GameObject::GameObject()" << std::endl;
+	}
+	~GameObject() {}
+	void GameObjectFunction() {
+		auto obj = AddComponent(new GameObject);
+	}
+private:
+};
+
+class Transform :
+	virtual public component::Component
+{
+public:
+	Transform() {
+		std::cout << "Transform::Transform()" << std::endl;
+	}
+	~Transform() {}
+	void TransformFunction() {
+		auto obj = AddComponent(new Transform);
+	}
+private:
+};
+
+class RectTransform :
+	public Transform
+{
+public:
+	RectTransform() {
+		std::cout << "RectTransform::RectTransform()" << std::endl;
+	}
+	~RectTransform() {}
+	void RectTransformFunction() {
+		auto obj = AddComponent(new RectTransform);
+	}
+private:
+};
+
+class Oisu :
+	public GameObject,
+	public RectTransform
+{
+public:
+	Oisu() {
+		std::cout << "Oisu::Oisu()" << std::endl;
+		m_GameObject = ThisComponent<GameObject>();
+		m_Transform = ThisComponent<Transform>();
+		m_RectTransform = ThisComponent<RectTransform>();
+
+		m_RectTransform = ThisComponent<RectTransform>();
+
+		ThisComponent<virtual_inheritance::more_derived>();
+		ThisComponent<virtual_inheritance::more_derived>();
+
+		GetComponent<RectTransform>();
+		GetComponent<RectTransform>();
+		GetComponent<virtual_inheritance::more_derived>();
+		GetComponent<virtual_inheritance::more_derived>();
+	}
+	~Oisu() {}
+	void OisuFunction() {
+		GameObjectFunction();
+		TransformFunction();
+		m_GameObject->GameObjectFunction();
+		m_Transform->TransformFunction();
+		m_RectTransform->RectTransformFunction();
+	}
+private:
+	reference::IReference<GameObject> m_GameObject;
+	reference::IReference<Transform> m_Transform;
+	reference::IReference<RectTransform> m_RectTransform;
+};
 
 int main()
 {
@@ -305,6 +382,15 @@ int main()
 	gameObject->AddComponent(new virtual_inheritance::derived_A);
 	gameObject->AddComponent(new virtual_inheritance::derived_B);
 	gameObject->AddComponent(new virtual_inheritance::base);
+
+	auto game = gameObject->AddComponent(new GameObject);
+	auto tran = gameObject->AddComponent(new Transform);
+	auto rect = gameObject->AddComponent(new RectTransform);
+	auto oisu = gameObject->AddComponent(new Oisu);
+
+	game->GameObjectFunction();
+	tran->TransformFunction();
+	rect->RectTransformFunction();
 
 	// system
 	return std::system("PAUSE");
