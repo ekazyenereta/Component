@@ -12,7 +12,7 @@
 namespace reference
 {
 	template <typename _Ty>
-	class IReference : 
+	class IReference :
 		private std::weak_ptr<_Ty>
 	{
 	public:
@@ -32,7 +32,7 @@ namespace reference
 
 		/**
 		@brief 監視対象の寿命切れやリンク切れを判定する
-		@return 管理対象オブジェクトが存在する場合は true、そうでない場合 は false
+		@return 監視オブジェクトが存在する場合は true、そうでない場合 は false
 		*/
 		bool check() const noexcept {
 			return !expired();
@@ -72,5 +72,107 @@ namespace reference
 				return false;
 			return lock() != _Right.lock();
 		}
+	};
+
+	//==========================================================================
+	//
+	// class  : IReferenceWrapper 
+	//
+	// English
+	// Content: Monitoring function reference class
+	//
+	// Japanese
+	// Content: 監視機能の参照クラス
+	//
+	//==========================================================================
+	template <typename _Derived, typename _Base, bool isExtended = std::is_base_of<_Base, _Derived>::value>
+	class IReferenceWrapper
+	{
+		static_assert(isExtended, "IReferenceWrapper <> : _Ty is not inherited from BaseClass Class");
+	public:
+		using Owned = _Derived;
+	public:
+		IReferenceWrapper() {}
+		IReferenceWrapper(const std::shared_ptr<_Base>& _This) : m_weak(_This) {}
+		IReferenceWrapper(const IReferenceWrapper& _Right) : m_weak(_Right.m_weak) {}
+		~IReferenceWrapper() {}
+
+		operator bool() const noexcept {
+			return m_weak.check();
+		}
+		bool operator!=(nullptr_t) const noexcept {
+			return m_weak != nullptr;
+		}
+		bool operator==(nullptr_t) const noexcept {
+			return m_weak == nullptr;
+		}
+		bool operator==(const IReference<_Base>& _Right) const noexcept {
+			if (!m_weak.check())
+				return false;
+			if (!_Right.check())
+				return false;
+			return m_weak == _Right;
+		}
+		bool operator!=(const IReference<_Base>& _Right) const noexcept {
+			if (!m_weak.check())
+				return false;
+			if (!m_weak.check())
+				return false;
+			return m_weak != _Right;
+		}
+		template<class _Ty>
+		bool operator!=(IReferenceWrapper <_Ty, _Base>& _Right) const noexcept {
+			if (!m_weak.check())
+				return false;
+			if (!m_weak.check())
+				return false;
+			return m_weak != _Right.m_weak;
+		}
+		template<class _Ty>
+		bool operator==(IReferenceWrapper <_Ty, _Base>& _Right) const noexcept {
+			if (!m_weak.check())
+				return false;
+			if (!m_weak.check())
+				return false;
+			return m_weak == _Right.m_weak;
+		}
+		void operator =(nullptr_t) {
+			m_weak.clear();
+		}
+		auto* operator->() const noexcept {
+			return (_Derived*)m_weak.operator->();
+		}
+
+		/**
+		English
+		@brief checks whether the referenced object was already deleted
+		@return True if the managed object exists, false otherwise
+		Japanese
+		@brief 監視対象の寿命切れやリンク切れを判定する
+		@return 監視オブジェクトが存在する場合は true、そうでない場合 は false
+		*/
+		bool check() const noexcept {
+			return m_weak.check();
+		}
+
+		/**
+		English
+		@brief returns the number of shared_ptr objects that manage the object
+		@return The number of shared_ptr instances sharing the ownership of the managed object at the instant of the call.
+		Japanese
+		@brief 監視しているshared_ptrオブジェクトの所有者数を取得する
+		@return shared_ptr呼び出しの瞬間に管理対象オブジェクトの所有権を共有しているインスタンスの数。
+		*/
+		long use_count() const noexcept {
+			return m_weak.use_count();
+		}
+		/**
+		@brief 監視対象を監視するのをやめます
+		*/
+		void clear() {
+			m_weak.clear();
+		}
+	protected:
+		IReference<_Base> m_weak; // 監視機能
 	};
 }
