@@ -105,6 +105,7 @@ namespace reference
 	public:
 		TemplateReference() {}
 		TemplateReference(const std::shared_ptr<_Base>& _This) : m_weak(_This) {}
+		TemplateReference(const weak_ptr_custom<_Base>& _This) : m_weak(_This) {}
 		TemplateReference(const TemplateReference& _Right) : m_weak(_Right.m_weak) {}
 		~TemplateReference() {}
 
