@@ -81,10 +81,10 @@ namespace component
 				}
 				else {
 					auto itr2 = m_component_thisptrs[typeid(_Ty).hash_code()] = m_component_this;
-					return std::shared_ptr<_Ty>(itr2, (_Ty*)itr2.get());
+					return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
 				}
 			}
-			return std::shared_ptr<_Ty>(itr1->second, (_Ty*)itr1->second.get());
+			return std::shared_ptr<_Ty>(itr1->second, static_cast<_Ty*>((void*)itr1->second.get()));
 		}
 
 		/**
@@ -131,7 +131,7 @@ namespace component
 
 			// 一番最後に登録されたコンポーネントを取得
 			auto itr2 = (*--itr1->second.end());
-			return std::shared_ptr<_Ty>(itr2, (_Ty*)itr2.get());
+			return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
 		}
 
 		/**
@@ -161,7 +161,7 @@ namespace component
 					continue;
 
 				// 対象コンポーネントの取得
-				return std::shared_ptr<_Ty>(itr2, (_Ty*)itr2.get());
+				return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
 			}
 			return IReference <_Ty>();
 		}
