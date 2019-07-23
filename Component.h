@@ -81,10 +81,10 @@ namespace component
 				}
 				else {
 					auto itr2 = m_component_thisptrs[typeid(_Ty).hash_code()] = m_component_this;
-					return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
+					return std::dynamic_pointer_cast<_Ty>(m_component_this);
 				}
 			}
-			return std::shared_ptr<_Ty>(itr1->second, static_cast<_Ty*>((void*)itr1->second.get()));
+			return std::dynamic_pointer_cast<_Ty>(itr1->second);
 		}
 
 		/**
@@ -121,17 +121,16 @@ namespace component
 			static_assert(isExtended, "GetComponent<> : _Ty is not inherited from Component Class");
 
 			// 取得対象の型があるかのチェック
-			auto itr1 = m_component_child.find(typeid(_Ty).hash_code());
-			if (itr1 == m_component_child.end())
+			auto itr = m_component_child.find(typeid(_Ty).hash_code());
+			if (itr == m_component_child.end())
 				return IReference <_Ty>();
 
 			// 専用の管理枠があったが、実態が無い場合終了
-			if ((int)itr1->second.size() == 0)
+			if ((int)itr->second.size() == 0)
 				return IReference <_Ty>();
 
 			// 一番最後に登録されたコンポーネントを取得
-			auto itr2 = (*--itr1->second.end());
-			return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
+			return std::dynamic_pointer_cast<_Ty>((*--itr->second.end()));
 		}
 
 		/**
@@ -161,7 +160,7 @@ namespace component
 					continue;
 
 				// 対象コンポーネントの取得
-				return std::shared_ptr<_Ty>(itr2, static_cast<_Ty*>((void*)itr2.get()));
+				return std::dynamic_pointer_cast<_Ty>(itr2);
 			}
 			return IReference <_Ty>();
 		}
