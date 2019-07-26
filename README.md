@@ -3,7 +3,7 @@
  **Overview**	
 ====	
 *The Component of this project is designed with Template.*<br>	
-*The added Component and the extracted Component are stored in TemplateReference.*<br>	
+*The added Component and the extracted Component are stored in IReference.*<br>	
 
  **Requirement**	
 ====	
@@ -12,4 +12,4 @@
  **Wiki**	
 ====	
 [Component](https://github.com/ekazyenereta/Component/wiki/Component)<BR>
-[TemplateReference](https://github.com/ekazyenereta/Reference/wiki/TemplateReference)<BR>
+[Reference](https://github.com/ekazyenereta/Reference/wiki)<BR>
