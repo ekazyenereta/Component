@@ -1,25 +1,22 @@
 //==========================================================================
 // Reference [Reference.h]
-// author: ekazyenereta
+// author : ekazyenereta
 //==========================================================================
 #pragma once
 
-//==========================================================================
-// include
-//==========================================================================
 #include <memory>
 
 namespace reference
 {
 	//==========================================================================
 	//
-	// class  : IReference 
+	// class : IReference 
 	//
 	// English
-	// Content: This function is an extension of weak_ptr.
+	// Content : This function is an extension of weak_ptr.
 	//
 	// Japanese
-	// Content: weak_ptr を拡張したクラスです。
+	// Content : weak_ptr を拡張したクラスです。
 	//
 	//==========================================================================
 	template <typename _Ty>
@@ -48,8 +45,13 @@ namespace reference
 		bool check() const noexcept {
 			return !expired();
 		}
+		// return pointer to resource
 		_Ty* operator->() const noexcept {
 			return lock().get();
+		}
+		// return reference to resource
+		_Ty& operator*() const noexcept {
+			return *lock().get();
 		}
 		/**
 		@brief 監視対象を監視するのをやめます
@@ -87,13 +89,13 @@ namespace reference
 
 	//==========================================================================
 	//
-	// class  : WrapperReference 
+	// class : WrapperReference 
 	//
 	// English
-	// Content: Monitoring function reference class
+	// Content : Monitoring function reference class
 	//
 	// Japanese
-	// Content: 監視機能の参照クラス
+	// Content : 監視機能の参照クラス
 	//
 	//==========================================================================
 	template <typename _Derived, typename _Base, bool isExtended = std::is_base_of<_Base, _Derived>::value>
@@ -151,8 +153,13 @@ namespace reference
 		void operator =(nullptr_t) {
 			m_weak.clear();
 		}
-		auto* operator->() const noexcept {
+		// return pointer to resource
+		_Derived* operator->() const noexcept {
 			return (_Derived*)m_weak.operator->();
+		}
+		// return reference to resource
+		_Derived& operator*() const noexcept {
+			return *(_Derived*)m_weak.operator->();
 		}
 
 		/**
