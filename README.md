@@ -5,7 +5,7 @@ namespace component {
 }
 ```
 # 概要
-Componentは、Component を継承した機能を追加、親子付けする機能である。
+このComponentは、Component を継承した機能を追加、親子付けする機能です。
 ### 管理
 Componentの管理には [std::shared_ptr](https://cpprefjp.github.io/reference/memory/shared_ptr.html) を利用しています。
 ### 参照
