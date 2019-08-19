@@ -9,7 +9,7 @@ namespace component {
 ### 管理
 Componentの管理には [std::shared_ptr](https://cpprefjp.github.io/reference/memory/shared_ptr.html) を利用しています。
 ### 参照
-Componentの参照には [IReference](https://github.com/ekazyenereta/Reference/wiki/IReference) を利用しています。
+Componentの参照には [IReference](https://github.com/ekazyenereta/Reference) を利用しています。
 
 # メンバ関数
 | 名前 | 説明 |
