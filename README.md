@@ -1,7 +1,3 @@
-# Component Development
-
- **Overview**	
-====	
 [component::Component](https://github.com/ekazyenereta/Component/blob/master/Component.h)<BR>
 
 	`
