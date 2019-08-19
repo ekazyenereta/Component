@@ -1,11 +1,9 @@
 [component::Component](https://github.com/ekazyenereta/Component/blob/master/Component.h)<BR>
-
-	`
-	namespace component {
-		class Component;
-	}
-	`
-
+```cpp
+namespace component {
+	class Component;
+}
+```
 # 概要
 Componentは、Component を継承した機能を追加、親子付けする機能である。
 ### 管理
