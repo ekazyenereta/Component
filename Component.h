@@ -30,7 +30,7 @@ public:
         m_parent = this;
     }
     virtual ~Component() {
-        AllDestroyComponent();
+        DestroyComponent();
         m_ComponentName.clear();
     }
 
@@ -39,29 +39,13 @@ public:
     @return コンポーネント
     */
     template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-    _Ty* AddComponent() {
+    _Ty* AddComponent(_Ty* _Ptr) {
         // コンポーネントが継承されていない場合に出力されます。
         static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
-        _Ty *component = new _Ty();
-        component->m_parent = this;
-        m_child.push_back(component);
-        return component;
-    }
-
-    /**
-    @brief コンポーネントの追加。Component を継承していない場合エラーが出ます。
-    @return コンポーネント
-    */
-    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value, typename... _Valty>
-    _Ty* AddComponent(_Valty&&... _Val) {
-        // コンポーネントが継承されていない場合に出力されます。
-        static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
-
-        _Ty *component = new _Ty((_Val)...);
-        component->m_parent = this;
-        m_child.push_back(component);
-        return component;
+		_Ptr->m_parent = this;
+        m_child.push_back(_Ptr);
+        return _Ptr;
     }
 
     /**
@@ -145,26 +129,6 @@ public:
 
     /**
     @brief 指定コンポーネントの破棄
-    */
-    template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-    void DestroyComponent() {
-        // コンポーネントが継承されていない場合に出力されます。
-        static_assert(isExtended, "DestroyComponent<> : _Ty is not inherited from Component Class");
-
-        // 対象のコンポーネントが出現するまで続け、出現した場合はその実体をHAL破棄する
-        for (auto itr = m_child.begin();itr != m_child.end();) {
-            if (dynamic_cast<_Ty*>((*itr)) != nullptr) {
-                delete (*itr);
-                itr = m_child.erase(itr);
-            }
-            else {
-                ++itr;
-            }
-        }
-    }
-
-    /**
-    @brief 指定コンポーネントの破棄
     @param label [in] コンポーネント名
     @return 破棄成功時に true が返ります
     */
@@ -191,7 +155,7 @@ public:
     /**
     @brief コンポーネントの破棄
     */
-    void AllDestroyComponent() {
+    void DestroyComponent() {
         // 子コンポーネントの破棄
         for (auto *& itr : m_child) {
             delete itr;
@@ -230,14 +194,6 @@ public:
     */
     const auto GetChild() const {
         return m_child;
-    }
-
-    /**
-    @brief ゲームオブジェクトの取得
-    @return オブジェクト
-    */
-    [[deprecated("please use GetParent() function")]] Component * GetGameObject() {
-        return m_parent;
     }
 
     /**

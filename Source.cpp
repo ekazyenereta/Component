@@ -50,12 +50,16 @@ private:
 
 int main()
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	// CRTメモリリーク箇所検出
+	// _CrtSetBreakAlloc(0);
+
     Component gameObject;
 
-    gameObject.AddComponent<CTest>();
-    gameObject.AddComponent<CTest2>();
-    gameObject.GetComponent< CTest2>()->SetComponentName("test");
-    gameObject.AddComponent<CTest3>()->AddComponent<CTest>()->AddComponent<CTest2>();
+    gameObject.AddComponent(new CTest);
+    gameObject.AddComponent(new CTest2);
+    gameObject.GetComponent<CTest2>()->SetComponentName("test");
+    gameObject.AddComponent(new CTest3)->AddComponent(new CTest)->AddComponent(new CTest2);
 
     printf("子要素数 >> %d \n", gameObject.GetNumChild());
 
