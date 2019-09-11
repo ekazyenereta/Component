@@ -32,9 +32,11 @@ namespace component
 		Component& operator=(Component&&) = delete;
 	public:
 		Component() : m_component_hash_code(typeid(Component).hash_code()) {
+			// アドレスのサイズを取得
 			int size = snprintf(nullptr, 0, "%p", this) + 1; // Extra space for '\0'
 			std::unique_ptr<char[]> buf(new char[size]);
 			snprintf(buf.get(), size, "%p", this);
+			// アドレスをデフォルトの名前にします
 			m_component_name = std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 			m_component_this = std::shared_ptr<Component>(this, [](Component* p) {p = nullptr; });
 		}
@@ -70,17 +72,25 @@ namespace component
 		*/
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		IReference <_Ty> ThisComponent() {
+			// 指定クラスのハッシュ値で検索を行います
 			auto itr1 = m_component_thisptrs.find(typeid(_Ty).hash_code());
+			// そのクラスの格納領域が無かったら
 			if (itr1 == m_component_thisptrs.end()) {
-				if (dynamic_cast<_Ty*>(this) == nullptr) {
+				// 自分自身を指定クラスでダウンキャストします
+				auto ptr_this = std::dynamic_pointer_cast<_Ty>(m_component_this);
+				// ダウンキャストしたが指定クラスが存在しない
+				if (ptr_this == nullptr) {
+					// 指定クラスが継承されていないので型領域のみ作成して終了します
 					m_component_thisptrs[typeid(_Ty).hash_code()];
 					return IReference <_Ty>();
 				}
 				else {
+					// 指定クラスが存在している
 					auto itr2 = m_component_thisptrs[typeid(_Ty).hash_code()] = m_component_this;
-					return std::dynamic_pointer_cast<_Ty>(m_component_this);
+					return ptr_this;
 				}
 			}
+			// ダウンキャストします
 			return std::dynamic_pointer_cast<_Ty>(itr1->second);
 		}
 
@@ -99,8 +109,11 @@ namespace component
 			static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
 
 			std::shared_ptr<_Ty> ptr(_Ref);
+			// クラスのハッシュ値を生成します
 			ptr->m_component_hash_code = typeid(_Ty).hash_code();
+			// そのクラス領域に格納します
 			m_component_child[ptr->m_component_hash_code].emplace_back(ptr);
+			// 親子関係の関連付け
 			ptr->m_component_parent = m_component_this;
 			return ptr;
 		}
@@ -120,10 +133,12 @@ namespace component
 			// 取得対象の型があるかのチェック
 			auto itr = m_component_child.find(typeid(_Ty).hash_code());
 			if (itr == m_component_child.end())
+				// 存在しないため空の参照機能を返します
 				return IReference <_Ty>();
 
 			// 専用の管理枠があったが、実態が無い場合終了
 			if ((int)itr->second.size() == 0)
+				// 存在しないため空の参照機能を返します
 				return IReference <_Ty>();
 
 			// 一番最後に登録されたコンポーネントを取得
@@ -147,11 +162,11 @@ namespace component
 			// 取得対象の型があるかのチェック
 			auto itr1 = m_component_child.find(typeid(_Ty).hash_code());
 			if (itr1 == m_component_child.end())
+				// 存在しないため空の参照機能を返します
 				return IReference <_Ty>();
 
 			// 対象のコンポーネントが出現するまで続け、出現した場合はその実体を返す
-			for (auto& itr2 : itr1->second)
-			{
+			for (auto& itr2 : itr1->second) {
 				// 対象コンポーネント名の取得に失敗
 				if (itr2->m_component_name != _Name)
 					continue;
@@ -159,6 +174,7 @@ namespace component
 				// 対象コンポーネントの取得
 				return std::dynamic_pointer_cast<_Ty>(itr2);
 			}
+			// 存在しないため空の参照機能を返します
 			return IReference <_Ty>();
 		}
 
@@ -178,6 +194,7 @@ namespace component
 				for (auto& itr2 : itr1.second)
 					if (itr2->m_component_name == _Name)
 						return itr2;
+			// 存在しないため空の参照機能を返します
 			return IReference <Component>();
 		}
 
@@ -194,8 +211,7 @@ namespace component
 		template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		bool SetComponent(_Ty* _Ref) {
 			static_assert(isExtended, "SetComponent<> : _Ty is not inherited from Component Class");
-
-			_Ref->m_component_hash_code = typeid(_Ty).hash_code();
+			// 生のポインタが渡されたので、処理を AddComponent に委託します
 			return AddComponent(_Ref).check();
 		}
 
@@ -216,6 +232,7 @@ namespace component
 			// 監視対象が存在しない場合、失敗
 			if (!_Ref.check())
 				return false;
+			// 自身のポインタと、登録しようとしているポインタが同じなので終了
 			if (_Ref->m_component_this == m_component_this)
 				return false;
 			// 対象の所有権を移動します
@@ -246,8 +263,10 @@ namespace component
 
 			// 指定された型のグループを破棄する
 			auto itr = m_component_child.find(typeid(_Ty).hash_code());
+			// 存在しなければ終了
 			if (itr == m_component_child.end())
 				return false;
+			// 存在するので破棄します
 			m_component_child.erase(itr);
 			return true;
 		}
@@ -268,15 +287,17 @@ namespace component
 
 			// 破棄対象の型を検索
 			auto itr1 = m_component_child.find(typeid(_Ty).hash_code());
+			// 存在しなければ終了
 			if (itr1 == m_component_child.end())
 				return false;
 
 			// 破棄対象の検索
 			auto itr2 = std::find(itr1->second.begin(), itr1->second.end(), _Ref->m_component_this);
+			// 存在しなければ終了
 			if (itr2 == itr1->second.end())
 				return false;
 
-			// 破棄
+			// 存在するので破棄します
 			itr1->second.erase(itr2);
 			_Ref.clear();
 			return true;
@@ -306,6 +327,7 @@ namespace component
 					itr2 = itr1.second.erase(itr2);
 					flag = true;
 				}
+			// 成功したかどうか
 			return flag;
 		}
 
@@ -327,6 +349,7 @@ namespace component
 
 			// 破棄対象の型を検索
 			auto itr1 = m_component_child.find(typeid(_Ty).hash_code());
+			// 存在しなければ終了
 			if (itr1 == m_component_child.end())
 				return flag;
 
@@ -377,6 +400,7 @@ namespace component
 		*/
 		int GetNumChild() {
 			int num = 0;
+			// 全ての型グループに登録してあるコンポーネント数を取得します
 			for (auto& itr1 : m_component_child)
 				num += (int)itr1.second.size();
 			return num;
@@ -392,6 +416,7 @@ namespace component
 		*/
 		const std::list<IReference<Component>> GetComponentChild() const {
 			std::list<IReference<Component>> ref;
+			// 全てのコンポーネントを取得します
 			for (auto& itr1 : m_component_child)
 				for (auto& itr2 : itr1.second)
 					ref.push_back(itr2);
@@ -446,9 +471,11 @@ namespace component
 		template<typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
 		IReference <_Ty> GetComponentParent() {
 			static_assert(isExtended, "GetComponentParent<> : _Ty is not inherited from Component Class");
-
+			// 親がいるかどうかチェックします
 			if (!m_component_parent.check())
+				// 存在しないため空の参照機能を返します
 				return IReference<_Ty>();
+			// 型指定で親のコンポーネントを取り出します
 			return m_component_parent->ThisComponent<_Ty>();
 		}
 
@@ -459,18 +486,22 @@ namespace component
 		@return 移動功時に true が返ります
 		*/
 		bool move(IReference<Component> _Par) {
+			// 親がいるかどうかチェック
 			if (!m_component_parent.check())
 				return false;
+			// 移動対象の実体のチェック
 			if (!_Par.check())
 				return false;
 
 			// 移動したい情報の型を取得
 			auto itr1 = m_component_parent->m_component_child.find(m_component_hash_code);
+			// 存在しないため終了
 			if (itr1 == m_component_parent->m_component_child.end())
 				return false;
 
 			// 移動対象を取得
 			auto itr2 = std::find(itr1->second.begin(), itr1->second.end(), m_component_this);
+			// 存在しないため終了
 			if (itr2 == itr1->second.end())
 				return false;
 
@@ -478,9 +509,11 @@ namespace component
 			auto ptr_copy = std::shared_ptr<Component>((*itr2));
 			itr1->second.erase(itr2);
 
-			// 移動先にデータを渡します
+			// 移動先の型領域にデータを渡します
 			_Par->m_component_child[m_component_hash_code].emplace_back(ptr_copy);
+			// 親子関係を結び直します
 			ptr_copy->m_component_parent = _Par->m_component_this;
+			// 成功
 			return true;
 		}
 	private:
@@ -496,10 +529,13 @@ namespace component
 	void Destroy(IReference<_Ty>& _Ref)
 	{
 		static_assert(isExtended, "Destroy <> : _Ty is not inherited from Component Class");
+		// 存在するかのチェック
 		if (!_Ref.check())
 			return;
+		// 破棄対象の親が存在するかのチェック
 		if (!_Ref->GetComponentParent().check())
 			return;
+		// 破棄対象の親のポインタ指定の破棄処理を呼び出します
 		_Ref->GetComponentParent()->DestroyComponent(_Ref);
 	}
 }
