@@ -1,80 +1,30 @@
 
-#include <cstdlib>
-#include <iostream>
-#include <vector>
 #include <string>
+#include "GameObject.h"
+#include "Transform.h"
 
-#include "Component.h"
-
-class CTest : public Component
+class Text :
+	public Component
 {
 public:
-    CTest() {}
-    ~CTest() {}
-
-    void Text()
-    {
-        printf("GetComponent >> CTest \n");
-    }
-private:
-
-};
-
-class CTest2 : public Component
-{
-public:
-    CTest2() {}
-    ~CTest2() {}
-
-    void Text()
-    {
-        printf("GetComponent >> CTest2 \n");
-    }
-private:
-
-};
-
-class CTest3 : public Component
-{
-public:
-    CTest3() {}
-    ~CTest3() {}
-
-    void Text()
-    {
-        printf("GetComponent >> CTest3 \n");
-    }
-private:
-
+	Text(){
+		std::cout << "Text::Text()" << std::endl;
+	}
+	virtual ~Text() {
+		std::cout << "Text::~Text()" << std::endl;
+	}
 };
 
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	// CRTメモリリーク箇所検出
-	// _CrtSetBreakAlloc(0);
 
-    Component gameObject;
+	GameObject gameObject;
 
-    gameObject.AddComponent(new CTest);
-    gameObject.AddComponent(new CTest2);
-    gameObject.GetComponent<CTest2>()->SetComponentName("test");
-    gameObject.AddComponent(new CTest3)->AddComponent(new CTest)->AddComponent(new CTest2);
+	auto* text1 = gameObject.AddComponent(new Text);
+	auto* i = gameObject.GetComponent<Text>();
 
-    printf("子要素数 >> %d \n", gameObject.GetNumChild());
+	auto tra = text1->GetGameObject()->GetComponent<Transform>();
 
-    gameObject.GetComponent<CTest3>()->Text();
-    gameObject.GetComponent<CTest3>()->GetComponent<CTest>()->Text();
-    gameObject.GetComponent<CTest3>()->GetComponent<CTest>()->GetComponent<CTest2>()->Text();
-
-    if (gameObject.GetComponent<CTest2>("test") != nullptr) {
-        gameObject.GetComponent<CTest2>("test")->Text();
-    }
-    else if (gameObject.GetComponent<CTest2>("test") == nullptr) {
-        printf("not name");
-    }
-
-    rewind(stdin);
-    getchar();
-    return 0;
+	return std::system("PAUSE");
 }
