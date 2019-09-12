@@ -5,10 +5,11 @@ class Object
 {
 public:
 	Object();
+	Object(const std::string& str);
 	virtual ~Object();
 	void SetObjectName(const std::string& _str);
+	const std::string& GetObjectName();
 	void DisplayFlags(bool _flag);
-	static void Destroy(Object* _ptr);
 private:
 	std::string m_object_name; // オブジェクト名
 	bool m_display_flags; // オブジェクト表示フラグ

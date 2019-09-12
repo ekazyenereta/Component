@@ -6,5 +6,6 @@ class Transform :
 {
 public:
 	Transform();
+	Transform(GameObject* _game_object);
 	virtual ~Transform();
 };

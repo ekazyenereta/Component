@@ -2,21 +2,24 @@
 #include "Transform.h"
 
 GameObject::GameObject() :
-	m_transform(new Transform)
+	Object("GameObject")
 {
+	m_transform = AddComponent(new Transform(this));
+}
+
+GameObject::GameObject(const std::string& _str) :
+	Object(_str)
+{
+	m_transform = AddComponent(new Transform(this));
 }
 
 GameObject::~GameObject()
 {
-	delete m_transform;
-	for (auto& itr : m_component_list)
-		if (itr != nullptr)
-			Destroy(itr);
+	m_component_list.clear();
 }
 
-
 template <>
-Transform* GameObject::GetComponent()
+reference::IReference<Transform> GameObject::GetComponent()
 {
 	return m_transform;
 }

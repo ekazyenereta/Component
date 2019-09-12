@@ -7,6 +7,11 @@ Object::Object() :
 {
 }
 
+Object::Object(const std::string& str) :
+	m_object_name(str)
+{
+}
+
 Object::~Object()
 {
 }
@@ -16,13 +21,12 @@ void Object::SetObjectName(const std::string& _str)
 	m_object_name = _str;
 }
 
+const std::string& Object::GetObjectName()
+{
+	return m_object_name;
+}
+
 void Object::DisplayFlags(bool _flag)
 {
 	m_display_flags = _flag;
-}
-
-void Object::Destroy(Object* _ptr)
-{
-	if (_ptr != nullptr)
-		delete _ptr;
 }

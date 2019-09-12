@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdio>
-#include <iostream>
 #include <list>
+#include <unordered_map>
 #include "Component.h"
 
 class Transform;
@@ -14,38 +14,68 @@ private:
 	public:
 		_InputComponent() {}
 		~_InputComponent() {}
-		void SetGameObject(GameObject* _Ptr) {
-			m_game_object = _Ptr;
+		void SetGameObject(GameObject* _ptr) {
+			m_game_object = _ptr;
 		}
 	};
 public:
 	GameObject();
+	GameObject(const std::string& _str);
 	virtual ~GameObject();
 
-	template <class _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
-	_Ty* AddComponent(_Ty* _Ptr)
+	/**
+	English
+	@brief Please add the component. Failure to inherit Component results in an error.
+	@param _ptr [in] Raw pointer
+	@return Monitoring function reference class
+	Japanese
+	@brief コンポーネントを追加してください。Componentを継承しないとエラーになります。
+	@param _ptr [in] 生ポインタ
+	@return 監視機能の参照クラス
+	*/
+	template <typename _Ty, bool isExtended = std::is_base_of<Component, _Ty>::value>
+	reference::IReference<_Ty> AddComponent(_Ty* _ptr)
 	{
-		static_assert(isExtended, "AddComponent<> : T is not inherited from Component Class");
-		((_InputComponent*)_Ptr)->SetGameObject(this);
-		m_component_list.push_back(_Ptr);
-		return _Ptr;
+		static_assert(isExtended, "AddComponent<> : _Ty is not inherited from Component Class");
+
+		// 関連付け
+		((_InputComponent*)_ptr)->SetGameObject(this);
+		std::shared_ptr<_Ty> ptr(_ptr);
+		// クラス領域に格納します
+		m_component_list[typeid(_Ty).hash_code()].emplace_back(ptr);
+		return ptr;
 	}
 
-	template <class _Ty>
-	_Ty* GetComponent()
+	/**
+	English
+	@brief Get component
+	@return Monitoring function reference class
+	Japanese
+	@brief コンポーネントの取得
+	@return 監視機能の参照クラス
+	*/
+	template <typename _Ty>
+	reference::IReference<_Ty> GetComponent()
 	{
-		for (auto& itr : m_component_list)
-		{
-			auto ptr = dynamic_cast<_Ty*>(itr);
-			if (ptr != nullptr)
-				return ptr;
-		}
-		return nullptr;
+		// 取得対象の型があるかのチェック
+		auto itr = m_component_list.find(typeid(_Ty).hash_code());
+		if (itr == m_component_list.end())
+			// 存在しないため空の参照機能を返します
+			return reference::IReference <_Ty>();
+
+		// 専用の管理枠があったが、実態が無い場合終了
+		if ((int)itr->second.size() == 0)
+			// 存在しないため空の参照機能を返します
+			return reference::IReference <_Ty>();
+
+		// 一番最後に登録されたコンポーネントを取得
+		return std::dynamic_pointer_cast<_Ty>((*--itr->second.end()));
 	}
+protected:
+	reference::IReference<Transform> m_transform;
 private:
-	std::list<Component*> m_component_list;
-	Transform* m_transform;
+	std::unordered_map<size_t, std::list<std::shared_ptr<Component>>> m_component_list;
 };
 
 template <>
-Transform* GameObject::GetComponent();
+reference::IReference<Transform> GameObject::GetComponent();
