@@ -4,22 +4,52 @@
 GameObject::GameObject() :
 	Object("GameObject")
 {
-	m_transform = AddComponent(new Transform(this));
+	m_Transform = AddComponent(new Transform(this));
 }
 
-GameObject::GameObject(const std::string& _str) :
-	Object(_str)
+GameObject::GameObject(const std::string& str) :
+	Object(str)
 {
-	m_transform = AddComponent(new Transform(this));
+	m_Transform = AddComponent(new Transform(this));
 }
 
 GameObject::~GameObject()
 {
-	m_component_list.clear();
+	for (auto& itr1 : m_ComponentList) {
+		for (auto itr2 : itr1.second)
+			if (itr2 != nullptr) {
+				delete itr2;
+				itr2 = nullptr;
+			}
+		itr1.second.clear();
+	}
+
+	m_ComponentList.clear();
+}
+ 
+SharePtr<GameObject> GameObject::AddGameObject()
+{
+	auto shareObj = SharePtr<GameObject>(new GameObject("GameObject"));
+	m_GameObjectChild.emplace_back(shareObj);
+	return shareObj;
+}
+
+SharePtr<GameObject> GameObject::AddGameObject(const std::string& str)
+{
+	auto shareObj = SharePtr<GameObject>(new GameObject(str));
+	m_GameObjectChild.emplace_back(shareObj);
+	return shareObj;
+}
+
+SharePtr<GameObject> GameObject::AddGameObject(GameObject* obj)
+{
+	auto shareObj = SharePtr<GameObject>(obj);
+	m_GameObjectChild.emplace_back(shareObj);
+	return shareObj;
 }
 
 template <>
-reference::IReference<Transform> GameObject::GetComponent()
+Transform* GameObject::GetComponent()
 {
-	return m_transform;
+	return m_Transform;
 }

@@ -2,22 +2,22 @@
 #include "GameObject.h"
 
 Component::Component() :
-	Object("Component"), m_game_object(nullptr)
+	Object("Component"), m_GameObject(nullptr)
 {
 }
 
 Component::Component(const std::string& str) :
-	Object(str), m_game_object(nullptr)
+	Object(str), m_GameObject(nullptr)
 {
 }
 
-Component::Component(const std::string& str, GameObject* _game_object) :
-	Object(str), m_game_object(_game_object)
+Component::Component(const std::string& str, GameObject* obj) :
+	Object(str), m_GameObject(obj)
 {
 }
 
-Component::Component(GameObject* _game_object) :
-	Object("Component"), m_game_object(_game_object)
+Component::Component(GameObject* obj) :
+	Object("Component"), m_GameObject(obj)
 {
 }
 

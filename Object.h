@@ -6,12 +6,12 @@ class Object
 public:
 	Object();
 	Object(const std::string& str);
-	virtual ~Object();
-	void SetObjectName(const std::string& _str);
+	~Object();
+	void SetObjectName(const std::string& str);
 	const std::string& GetObjectName();
-	void DisplayFlags(bool _flag);
+	void DisplayFlags(bool flag);
 private:
-	std::string m_object_name; // オブジェクト名
-	bool m_display_flags; // オブジェクト表示フラグ
-	int64_t m_instanceID; // インスタンスID
+	std::string m_ObjectName; // オブジェクト名
+	bool m_DisplayFlags; // オブジェクト表示フラグ
+	int64_t m_InstanceID; // インスタンスID
 };

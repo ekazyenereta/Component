@@ -3,12 +3,12 @@
 static int64_t g_CountInstanceID = 0;
 
 Object::Object() :
-	m_display_flags(true), m_instanceID((g_CountInstanceID++))
+	m_DisplayFlags(true), m_InstanceID((g_CountInstanceID++))
 {
 }
 
 Object::Object(const std::string& str) :
-	m_object_name(str)
+	m_DisplayFlags(true), m_ObjectName(str), m_InstanceID((g_CountInstanceID++))
 {
 }
 
@@ -16,17 +16,17 @@ Object::~Object()
 {
 }
 
-void Object::SetObjectName(const std::string& _str)
+void Object::SetObjectName(const std::string& str)
 {
-	m_object_name = _str;
+	m_ObjectName = str;
 }
 
 const std::string& Object::GetObjectName()
 {
-	return m_object_name;
+	return m_ObjectName;
 }
 
-void Object::DisplayFlags(bool _flag)
+void Object::DisplayFlags(bool flag)
 {
-	m_display_flags = _flag;
+	m_DisplayFlags = flag;
 }

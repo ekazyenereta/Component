@@ -6,8 +6,8 @@ Transform::Transform() :
 {
 }
 
-Transform::Transform(GameObject* _game_object) :
-	Component("Transform", _game_object)
+Transform::Transform(GameObject* obj) :
+	Component("Transform", obj)
 {
 }
 

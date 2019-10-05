@@ -15,9 +15,9 @@ public:
 		std::cout << "Text::~Text()" << std::endl;
 	}
 	void Draw() {
-		if (m_game_object == nullptr)
+		if (m_GameObject == nullptr)
 			return;
-		auto itr = m_game_object->GetComponent<Transform>();
+		auto itr = m_GameObject->GetComponent<Transform>();
 		std::cout << itr->GetObjectName() << " -> " << GetObjectName() << std::endl;
 	}
 };
@@ -33,9 +33,9 @@ public:
 		std::cout << "Move::~Move()" << std::endl;
 	}
 	void Draw() {
-		if (m_game_object == nullptr)
+		if (m_GameObject == nullptr)
 			return;
-		auto itr = m_game_object->GetComponent<Transform>();
+		auto itr = m_GameObject->GetComponent<Transform>();
 		std::cout << itr->GetObjectName() << " -> " << GetObjectName() << std::endl;
 	}
 };
@@ -45,7 +45,7 @@ int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	std::unique_ptr<GameObject> gameObject(new GameObject("GameObject"));
+	SharePtr<GameObject> gameObject(new GameObject("GameObject"));
 
 	auto text = gameObject->AddComponent(new Text);
 	auto t = gameObject->GetComponent<Text>();
@@ -55,6 +55,10 @@ int main()
 
 	t->Draw();
 	m->Draw();
+
+	auto obj2 = gameObject->AddGameObject();
+	auto text2 = obj2->AddComponent(new Text);
+	text2->Draw();
 
 	return std::system("PAUSE");
 }
