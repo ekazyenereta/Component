@@ -48,6 +48,16 @@ SharePtr<GameObject> GameObject::AddGameObject(GameObject* obj)
 	return shareObj;
 }
 
+const std::list<SharePtr<GameObject>>& GameObject::GetChild()
+{
+	return m_GameObjectChild;
+}
+
+size_t GameObject::GetNumChild()
+{
+	return m_GameObjectChild.size();
+}
+
 template <>
 Transform* GameObject::GetComponent()
 {

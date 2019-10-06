@@ -49,11 +49,18 @@ private:
 	_Ptr* m_ptr; // ポインタ管理
 public:
 	SharePtr() :m_ptr(nullptr) {} // empty SharePtr
-	SharePtr(_Ty* _ptr) :m_ptr(new _Ptr(_ptr)) { m_ptr->AddUserCount(); }// empty SharePtr
-	SharePtr(_Ty* _ptr, const std::function<void(_Ty*)>& _deleter) :m_ptr(new _Ptr(_ptr, _deleter)) { m_ptr->AddUserCount(); } // empty SharePtr
+	SharePtr(_Ty* _ptr) :m_ptr(new _Ptr(_ptr)) { // empty SharePtr
+		m_ptr->AddUserCount();
+	}
+	SharePtr(_Ty* _ptr, const std::function<void(_Ty*)>& _deleter) :m_ptr(new _Ptr(_ptr, _deleter)) { // empty SharePtr
+		m_ptr->AddUserCount();
+	}
 	SharePtr(nullptr_t) :m_ptr(nullptr) {} // empty SharePtr
 	SharePtr(nullptr_t, const std::function<void(_Ty*)>& _deleter) :m_ptr(nullptr) {} // empty SharePtr
-	SharePtr(const SharePtr& data) :m_ptr(data.m_ptr) { if (check())m_ptr->AddUserCount(); }
+	SharePtr(const SharePtr& data) :m_ptr(data.m_ptr) {
+		if (check())
+			m_ptr->AddUserCount();
+	}
 	~SharePtr() {
 		// 管理していない場合終了
 		if (m_ptr == nullptr)

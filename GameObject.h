@@ -67,6 +67,8 @@ public:
 	SharePtr<GameObject> AddGameObject();
 	SharePtr<GameObject> AddGameObject(const std::string& str);
 	SharePtr<GameObject> AddGameObject(GameObject* obj);
+	const std::list<SharePtr<GameObject>>& GetChild();
+	size_t GetNumChild();
 };
 
 template <>
