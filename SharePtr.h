@@ -13,10 +13,12 @@
 //
 //==========================================================================
 template <class _Ty>
-class SharePtr {
+class SharePtr final
+{
 private:
 	// 生ポインタ管理機能
-	class _Ptr {
+	class _Ptr
+	{
 	public:
 		_Ty* m_data; // 生ポインタ
 	private:
@@ -69,6 +71,7 @@ public:
 		if (!m_ptr->Release())
 			return;
 		delete m_ptr;
+		m_ptr = nullptr;
 	}
 	/**
 	@brief 監視対象の寿命切れやリンク切れを判定する
@@ -86,7 +89,7 @@ public:
 	@return ユーザー数
 	*/
 	int64_t use_count() noexcept {
-		if (check())
+		if (m_ptr != nullptr)
 			return m_ptr->GetUserCount();
 		return 0;
 	}
@@ -98,11 +101,8 @@ public:
 		if (m_ptr == nullptr)
 			return;
 		// 参照数を減らしたら解放可能になった
-		if (m_ptr->Release()) {
-			// データが存在する場合解放
-			if (m_ptr->m_data != nullptr)
-				delete m_ptr;
-		}
+		if (m_ptr->Release())
+			delete m_ptr;
 		// まだ参照中のデータがあるので、この管理機能からアクセスできないようにする
 		m_ptr = nullptr;
 	}
@@ -110,7 +110,7 @@ public:
 	@brief 監視対象を破棄する
 	*/
 	void destroy() {
-		if (check())
+		if (m_ptr != nullptr)
 			m_ptr->destroy();
 	}
 
