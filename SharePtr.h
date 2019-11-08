@@ -13,12 +13,10 @@
 //
 //==========================================================================
 template <class _Ty>
-class SharePtr final
-{
+class SharePtr final {
 private:
 	// 生ポインタ管理機能
-	class _Ptr
-	{
+	class _Ptr {
 	public:
 		_Ty* m_data; // 生ポインタ
 	private:
@@ -40,7 +38,7 @@ private:
 		}
 		bool Release() {
 			m_user_count--;
-			return m_user_count == 0 ? true : false;
+			return (m_user_count <= 0);
 		}
 		void destroy() {
 			m_deleter(m_data);
@@ -67,10 +65,9 @@ public:
 		// 管理していない場合終了
 		if (m_ptr == nullptr)
 			return;
-		// 参照数を減らし、解放可能ではない場合終了
-		if (!m_ptr->Release())
-			return;
-		delete m_ptr;
+		// 参照数を減らし、解放可能な場合
+		if (m_ptr->Release())
+			delete m_ptr;
 		m_ptr = nullptr;
 	}
 	/**
@@ -103,7 +100,6 @@ public:
 		// 参照数を減らしたら解放可能になった
 		if (m_ptr->Release())
 			delete m_ptr;
-		// まだ参照中のデータがあるので、この管理機能からアクセスできないようにする
 		m_ptr = nullptr;
 	}
 	/**
@@ -115,10 +111,8 @@ public:
 	}
 
 	// return pointer to resource
-	_Ty* operator->() const noexcept {
-		if (check())
-			return m_ptr->m_data;
-		return nullptr;
+	_Ty* operator->() const {
+		return m_ptr->m_data;
 	}
 
 	// return reference to resource
@@ -151,14 +145,42 @@ public:
 			return false;
 		return m_ptr->m_data != _Right.m_ptr->m_data;
 	}
+	bool operator==(const _Ty& _Right) const noexcept {
+		if (!check())
+			return false;
+		return m_ptr->m_data == &_Right;
+	}
+	bool operator!=(const _Ty& _Right) const noexcept {
+		if (!check())
+			return false;
+		return m_ptr->m_data != &_Right;
+	}
+	bool operator==(const _Ty* _Right) const noexcept {
+		if (!check())
+			return false;
+		if (_Right == nullptr)
+			return false;
+		return m_ptr->m_data == _Right;
+	}
+	bool operator!=(const _Ty* _Right) const noexcept {
+		if (!check())
+			return false;
+		if (_Right == nullptr)
+			return false;
+		return m_ptr->m_data != _Right;
+	}
 	SharePtr& operator=(const SharePtr& data) {
+		// コピー元を生成
 		auto pCopy = data.m_ptr;
 		if (pCopy != nullptr)
 			pCopy->AddUserCount();
+		// 現在参照しているデータを解放
 		clear();
+		// 自身にコピー
 		m_ptr = pCopy;
 		if (check())
 			m_ptr->AddUserCount();
+		// コピー元を解放
 		if (pCopy != nullptr)
 			pCopy->Release();
 		return *this;
